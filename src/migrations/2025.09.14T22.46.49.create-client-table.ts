@@ -2,7 +2,7 @@ import { Sequelize, DataTypes } from "sequelize";
 import type { Migration } from "../umzug";
 
 export const up: Migration = async ({ context: sequelize }) => {
-  await sequelize.getQueryInterface().createTable("clients_subs", {
+  await sequelize.getQueryInterface().createTable("client_sub", {
     id: {
       primaryKey: true,
       autoIncrement: true,
@@ -20,6 +20,7 @@ export const up: Migration = async ({ context: sequelize }) => {
     cost: {
       type: DataTypes.DECIMAL,
       allowNull: true,
+      defaultValue: 0,
     },
     status: {
       type: DataTypes.TEXT,
@@ -114,5 +115,5 @@ export const up: Migration = async ({ context: sequelize }) => {
   });
 };
 export const down: Migration = async ({ context: sequelize }) => {
-  await sequelize.getQueryInterface().dropTable("clients_subs");
+  await sequelize.getQueryInterface().dropTable("client_sub");
 };

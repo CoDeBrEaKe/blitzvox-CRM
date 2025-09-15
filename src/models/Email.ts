@@ -3,6 +3,7 @@ import {
   Column,
   CreatedAt,
   DataType,
+  Model,
   Table,
   UpdatedAt,
 } from "sequelize-typescript";
@@ -10,7 +11,6 @@ import {
   CreationOptional,
   InferAttributes,
   InferCreationAttributes,
-  Model,
 } from "sequelize";
 
 @Table({
@@ -30,14 +30,20 @@ export default class Email extends Model<
 
   @AllowNull(false)
   @Column
-  declare subject: String;
+  declare subject: string;
 
   @AllowNull(false)
   @Column
-  declare content: String;
+  declare content: string;
 
   @CreatedAt
   declare created_at: CreationOptional<Date>;
   @UpdatedAt
   declare updated_at: CreationOptional<Date>;
+  toJSON() {
+    return {
+      ...this.get(),
+      id: undefined,
+    };
+  }
 }

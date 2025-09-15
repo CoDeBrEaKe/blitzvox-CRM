@@ -7,12 +7,14 @@ import {
   Unique,
   Default,
   HasMany,
+  BelongsToMany,
 } from "sequelize-typescript";
 import {
   CreationOptional,
   InferAttributes,
   InferCreationAttributes,
 } from "sequelize";
+import Client from "./Client";
 
 enum Role {
   ADMIN = "admin",
@@ -37,30 +39,30 @@ export default class User extends Model<
   @AllowNull(false)
   @Default("")
   @Column
-  declare name: String;
+  declare name: string;
 
   @AllowNull(false)
   @Unique
   @Column
-  declare username: String;
+  declare username: string;
 
   @AllowNull(false)
-  @Default("")
   @Column
-  declare password: String;
+  declare password: string;
 
   @AllowNull(false)
   @Default("agent")
   @Column({
     type: DataType.ENUM(...Object.values(Role)),
   })
+  @HasMany(() => Client)
+  declare clients?: InferAttributes<Client>[];
 
-  // @HasMany(()=>Client)
-  // declare clients: Client[];
   declare role: Role;
   toJSON() {
     return {
       ...this.get(),
+      id: undefined,
       password: undefined,
     };
   }
