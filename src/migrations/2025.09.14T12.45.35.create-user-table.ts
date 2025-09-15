@@ -12,6 +12,7 @@ export const up: Migration = async ({ context: sequelize }) => {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+      defaultValue: "",
     },
     username: {
       type: DataTypes.STRING,
@@ -21,6 +22,7 @@ export const up: Migration = async ({ context: sequelize }) => {
     password: {
       type: DataTypes.STRING,
       allowNull: false,
+      defaultValue: "",
     },
     role: {
       type: DataTypes.ENUM("admin", "agent"),

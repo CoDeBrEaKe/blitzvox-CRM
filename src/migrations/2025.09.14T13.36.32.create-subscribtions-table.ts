@@ -2,17 +2,22 @@ import { Sequelize, DataTypes } from "sequelize";
 import type { Migration } from "../umzug";
 
 export const up: Migration = async ({ context: sequelize }) => {
-  await sequelize.getQueryInterface().createTable("subscribtions", {
+  await sequelize.getQueryInterface().createTable("subscriptions", {
     id: {
       primaryKey: true,
       autoIncrement: true,
       type: DataTypes.BIGINT,
       allowNull: false,
     },
-    sub_name: {
-      type: DataTypes.TEXT,
+    sub_type: {
+      type: DataTypes.ENUM("electricity", "gas", "internet"),
       allowNull: false,
     },
+    company: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -26,5 +31,5 @@ export const up: Migration = async ({ context: sequelize }) => {
   });
 };
 export const down: Migration = async ({ context: sequelize }) => {
-  await sequelize.getQueryInterface().dropTable("subscribtions");
+  await sequelize.getQueryInterface().dropTable("subscriptions");
 };

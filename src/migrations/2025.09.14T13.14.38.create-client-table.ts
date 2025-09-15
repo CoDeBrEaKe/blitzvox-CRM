@@ -57,7 +57,7 @@ export const up: Migration = async ({ context: sequelize }) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    assigned_to: {
+    user_id: {
       type: DataTypes.BIGINT,
       allowNull: true,
       references: {
