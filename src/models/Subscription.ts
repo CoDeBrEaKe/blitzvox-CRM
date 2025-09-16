@@ -10,7 +10,7 @@ import {
   Table,
   UpdatedAt,
 } from "sequelize-typescript";
-enum SUB {
+export enum SUB {
   electricity = "electricity",
   gas = "gas",
   internet = "internet",

@@ -82,11 +82,11 @@ export const up: Migration = async ({ context: sequelize }) => {
       type: DataTypes.ENUM("1 Year", "2 Year"),
       allowNull: true,
     },
-    user_id: {
+    client_id: {
       type: DataTypes.BIGINT,
       allowNull: true,
       references: {
-        model: "users",
+        model: "clients",
         key: "id",
       },
       onUpdate: "CASCADE",

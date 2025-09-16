@@ -8,6 +8,8 @@ import {
   Default,
   HasMany,
   BelongsToMany,
+  CreatedAt,
+  UpdatedAt,
 } from "sequelize-typescript";
 import {
   CreationOptional,
@@ -16,7 +18,7 @@ import {
 } from "sequelize";
 import Client from "./Client";
 
-enum Role {
+export enum Role {
   ADMIN = "admin",
   AGENT = "agent",
 }
@@ -55,10 +57,16 @@ export default class User extends Model<
   @Column({
     type: DataType.ENUM(...Object.values(Role)),
   })
+  declare role: Role;
+
+  @CreatedAt
+  declare createdAt?: any;
+  @UpdatedAt
+  declare updatedAt?: any;
+
   @HasMany(() => Client)
   declare clients?: InferAttributes<Client>[];
 
-  declare role: Role;
   toJSON() {
     return {
       ...this.get(),
