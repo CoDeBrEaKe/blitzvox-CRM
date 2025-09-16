@@ -16,7 +16,6 @@ import {
   InferCreationAttributes,
 } from "sequelize";
 import Client from "./Client";
-import User from "./User";
 
 @Table({
   tableName: "feedbacks",

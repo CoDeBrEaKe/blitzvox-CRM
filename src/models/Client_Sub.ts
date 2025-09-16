@@ -17,7 +17,7 @@ import {
 import Client from "./Client";
 import Subscription from "./Subscription";
 
-enum TIME {
+export enum TIME {
   oneYear = "1 Year",
   twoYear = "2 Years",
 }
@@ -75,7 +75,7 @@ export default class Client_Sub extends Model<
   @Column({
     type: DataType.ENUM(...Object.values(TIME)),
   })
-  declare contract_time?: Date;
+  declare contract_time?: TIME;
 
   @ForeignKey(() => Client)
   @Column({
@@ -83,6 +83,7 @@ export default class Client_Sub extends Model<
     primaryKey: true,
   })
   declare client_id: number;
+
   @ForeignKey(() => Subscription)
   @Column({
     type: DataType.BIGINT,
