@@ -1,6 +1,11 @@
 import { Sequelize, DataTypes } from "sequelize";
 import type { Migration } from "../umzug";
-
+export enum SUB {
+  electricity = "electricity",
+  gas = "gas",
+  internet = "internet",
+  health_insurance = "health insurance",
+}
 export const up: Migration = async ({ context: sequelize }) => {
   await sequelize.getQueryInterface().createTable("subscriptions", {
     id: {
@@ -10,7 +15,7 @@ export const up: Migration = async ({ context: sequelize }) => {
       allowNull: false,
     },
     sub_type: {
-      type: DataTypes.ENUM("electricity", "gas", "internet"),
+      type: DataTypes.ENUM(...Object.values(SUB)),
       allowNull: false,
     },
     company: {

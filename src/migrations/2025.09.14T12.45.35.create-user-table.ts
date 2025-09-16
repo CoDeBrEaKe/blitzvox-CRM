@@ -28,6 +28,14 @@ export const up: Migration = async ({ context: sequelize }) => {
       type: DataTypes.ENUM("admin", "agent"),
       defaultValue: "agent",
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+    },
   });
 };
 export const down: Migration = async ({ context: sequelize }) => {

@@ -8,6 +8,8 @@ import {
   Default,
   HasMany,
   BelongsToMany,
+  CreatedAt,
+  UpdatedAt,
 } from "sequelize-typescript";
 import {
   CreationOptional,
@@ -55,9 +57,15 @@ export default class User extends Model<
   @Column({
     type: DataType.ENUM(...Object.values(Role)),
   })
-  @HasMany(() => Client)
-  declare clients?: InferAttributes<Client>[];
+  @CreatedAt
+  declare createdAt?: CreationOptional<Date>;
+  @UpdatedAt
+  declare updatedAt?: CreationOptional<Date>;
 
+  @HasMany(() => Client, {
+    foreignKey: "user_id", // 👈 matches the FK in Client
+    as: "clients", // 👈 alias instead of client_id
+  })
   declare role: Role;
   toJSON() {
     return {

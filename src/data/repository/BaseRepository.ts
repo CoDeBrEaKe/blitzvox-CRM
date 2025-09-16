@@ -13,6 +13,7 @@ export default class BaseRepository {
         host: config.db.host,
         port: config.db.port,
         dialect: "postgres",
+        models: [__dirname + "/../../models"], // Adjust the path as necessary
       }
     );
   }
