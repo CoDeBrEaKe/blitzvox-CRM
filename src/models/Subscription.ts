@@ -45,6 +45,10 @@ export default class Subscription extends Model<
 
   @Default("")
   @Column
+  declare sub_name: string;
+
+  @Default("")
+  @Column
   declare company?: string;
 
   @BelongsToMany(() => Client, () => Client_Sub)

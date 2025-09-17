@@ -68,3 +68,21 @@ export const updateClient = async (req: Request, res: Response) => {
   }
   //   console.log("Token:", token);
 };
+
+export const deleteClient = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if ((req as any).user.role !== "admin") {
+    return res.status(403).json({ message: "Only admins can delete clients" });
+  }
+
+  try {
+    const client = await Client.findByPk(id);
+    if (!client) {
+      return res.status(404).json({ message: "Client not found" });
+    }
+    await client.destroy();
+    return res.status(200).json({ message: "Client Deleted" });
+  } catch (error) {
+    return res.status(500).json({ message: "Something wrong happened" });
+  }
+};

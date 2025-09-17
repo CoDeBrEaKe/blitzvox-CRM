@@ -18,11 +18,15 @@ export const up: Migration = async ({ context: sequelize }) => {
       type: DataTypes.ENUM(...Object.values(SUB)),
       allowNull: false,
     },
+    sub_name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "",
+    },
     company: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,

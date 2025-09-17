@@ -1,14 +1,29 @@
 type Channel = "EMAIL" | "WHATSAPP";
+import { transporter } from "../utils/emailSetup";
 
 abstract class MessageService {
-  abstract sendMessage(subject: string, message: string, to: string): void;
+  abstract sendMessage(
+    subject: string,
+    message: string,
+    to: string
+  ): Promise<void>;
 }
 
 class EmailService extends MessageService {
-  sendMessage(subject: string, message: string, to: string): void {
-    console.log(
-      `Email sent to ${to} with subject: ${subject} and message: ${message}`
-    );
+  async sendMessage(subject: string, html: string, to: string): Promise<void> {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to,
+      subject,
+      html,
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log("✅ Email sent successfully");
+    } catch (error) {
+      console.error("❌ Error sending email:", error);
+    }
   }
 }
 

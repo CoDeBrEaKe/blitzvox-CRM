@@ -1,8 +1,10 @@
 import { Request, Response, Express } from "express";
 import * as userController from "./../controllers/userController";
+import { authMiddleware } from "../middlewares/authMiddleware";
+
 export const userRoutes = async (app: Express) => {
-  app.get("/users", userController.getUsers);
+  app.get("/users", authMiddleware, userController.getUsers);
   app.post("/login", userController.loginUser);
-  app.post("/admin/users", userController.addUser);
-  app.delete("/admin/users", userController.getUsers);
+  app.post("/admin/users", authMiddleware, userController.addUser);
+  app.get("/logout", authMiddleware, userController.logoutUser);
 };

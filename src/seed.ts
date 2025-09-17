@@ -51,7 +51,7 @@ async function seed() {
             SUB.gas,
             SUB.internet,
           ]),
-
+          sub_name: faker.company.name(),
           company: faker.company.name(),
           clients: [],
         })

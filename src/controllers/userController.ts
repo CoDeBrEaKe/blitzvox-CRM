@@ -37,7 +37,7 @@ export const loginUser = async (req: Request, res: Response) => {
   if (!check) {
     return res.status(401).json({ messsage: "Invalid Username" });
   }
-  res.cookie("token", generateToken(user), {
+  res.cookie("token", generateToken({ ...user }), {
     maxAge: 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", // set to true in production

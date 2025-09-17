@@ -10,8 +10,6 @@ import {
   BelongsToMany,
   CreatedAt,
   UpdatedAt,
-  CreatedAt,
-  UpdatedAt,
 } from "sequelize-typescript";
 import {
   CreationOptional,
