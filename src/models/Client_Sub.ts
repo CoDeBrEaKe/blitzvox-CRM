@@ -1,5 +1,6 @@
 import {
   AllowNull,
+  BelongsTo,
   Column,
   CreatedAt,
   DataType,
@@ -16,6 +17,7 @@ import {
 } from "sequelize";
 import Client from "./Client";
 import Subscription from "./Subscription";
+import User from "./User";
 
 export enum TIME {
   oneYear = "1 Year",
@@ -84,10 +86,20 @@ export default class Client_Sub extends Model<
   })
   declare client_id: number;
 
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.BIGINT,
+    primaryKey: true,
+  })
+  declare user_id: number;
+
   @ForeignKey(() => Subscription)
   @Column({
     type: DataType.BIGINT,
     primaryKey: true,
   })
   declare sub_id: number;
+
+  @BelongsTo(() => User)
+  declare creator: InferAttributes<User>;
 }

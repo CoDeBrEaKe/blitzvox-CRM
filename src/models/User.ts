@@ -17,6 +17,7 @@ import {
   InferCreationAttributes,
 } from "sequelize";
 import Client from "./Client";
+import Client_Sub from "./Client_Sub";
 
 export enum Role {
   ADMIN = "admin",
@@ -66,6 +67,8 @@ export default class User extends Model<
 
   @HasMany(() => Client)
   declare clients?: InferAttributes<Client>[];
+  @HasMany(() => Client_Sub)
+  declare subscriptions?: InferAttributes<Client_Sub>[];
 
   toJSON() {
     return {

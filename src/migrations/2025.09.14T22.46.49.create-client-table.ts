@@ -9,6 +9,16 @@ export const up: Migration = async ({ context: sequelize }) => {
       type: DataTypes.BIGINT,
       allowNull: false,
     },
+    user_id: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      references: {
+        model: "users",
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "SET NULL",
+    },
     order_num: {
       type: DataTypes.TEXT,
       allowNull: true,
