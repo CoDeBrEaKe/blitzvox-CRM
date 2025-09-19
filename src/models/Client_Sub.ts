@@ -72,12 +72,21 @@ export default class Client_Sub extends Model<
   declare start_importing?: Date;
   @Column
   declare end_importing?: Date;
+  // Not used property
   @Column
   declare contract_end?: Date;
   @Column({
     type: DataType.ENUM(...Object.values(TIME)),
   })
   declare contract_time?: TIME;
+  @Column
+  declare family_count?: number;
+  @Column
+  declare persons_num?: number;
+  @Column
+  declare persons_name?: string;
+  @Column
+  declare documents_link?: string;
 
   @ForeignKey(() => Client)
   @Column({

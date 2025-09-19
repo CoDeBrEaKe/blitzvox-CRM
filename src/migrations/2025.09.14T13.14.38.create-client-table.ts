@@ -57,6 +57,10 @@ export const up: Migration = async ({ context: sequelize }) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    documents_link: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     user_id: {
       type: DataTypes.BIGINT,
       allowNull: true,

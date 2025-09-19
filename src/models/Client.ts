@@ -59,6 +59,8 @@ export default class Client extends Model<
   declare email?: string;
   @Column
   declare admin_note?: string;
+  @Column
+  declare document_link: string;
 
   @ForeignKey(() => User)
   @Column({

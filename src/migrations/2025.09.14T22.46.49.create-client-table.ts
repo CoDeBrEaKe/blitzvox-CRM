@@ -92,6 +92,22 @@ export const up: Migration = async ({ context: sequelize }) => {
       type: DataTypes.ENUM("1 Year", "2 Year"),
       allowNull: true,
     },
+    family_count: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    persons_num: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    persons_name: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    documents_link: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     client_id: {
       type: DataTypes.BIGINT,
       allowNull: true,
