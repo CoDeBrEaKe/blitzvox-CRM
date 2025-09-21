@@ -41,7 +41,7 @@ export default class Feedback extends Model<
   declare client_id: number;
 
   @BelongsTo(() => Client)
-  declare client: InferAttributes<Client>;
+  declare client?: InferAttributes<Client>;
 
   @CreatedAt
   declare created_at?: CreationOptional<Date>;

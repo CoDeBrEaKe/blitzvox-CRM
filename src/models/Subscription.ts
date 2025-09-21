@@ -5,6 +5,7 @@ import {
   CreatedAt,
   DataType,
   Default,
+  ForeignKey,
   HasMany,
   Model,
   Table,
@@ -23,6 +24,7 @@ import {
 } from "sequelize";
 import Client from "./Client";
 import Client_Sub from "./Client_Sub";
+import Subscription_Type from "./Subscription_Type";
 @Table({
   modelName: "Subscription",
   tableName: "subscriptions",
@@ -38,10 +40,11 @@ export default class Subscription extends Model<
   })
   declare id: CreationOptional<number>;
 
+  @ForeignKey(() => Subscription_Type)
   @Column({
-    type: DataType.ENUM(...Object.values(SUB)),
+    type: DataType.BIGINT,
   })
-  declare sub_type?: SUB;
+  declare sub_id?: number;
 
   @Default("")
   @Column
@@ -53,6 +56,9 @@ export default class Subscription extends Model<
 
   @BelongsToMany(() => Client, () => Client_Sub)
   declare clients: InferAttributes<Client>[];
+
+  @BelongsTo(() => Subscription_Type)
+  declare type?: InferAttributes<Subscription_Type>;
 
   @CreatedAt
   declare created_at: CreationOptional<Date>;

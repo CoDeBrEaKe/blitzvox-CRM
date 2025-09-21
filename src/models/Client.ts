@@ -79,6 +79,7 @@ export default class Client extends Model<
   declare assignedTo?: InferAttributes<User>;
   @HasMany(() => Feedback)
   declare feedbacks?: InferAttributes<Feedback>[];
+
   toJSON() {
     return {
       ...this.get(),

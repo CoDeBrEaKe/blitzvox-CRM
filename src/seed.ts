@@ -11,12 +11,20 @@ import Feedback from "./models/Feedback";
 import { Role } from "./models/User";
 import { SUB } from "./models/Subscription";
 import { TIME } from "./models/Client_Sub";
+import { hashPassword } from "./utils/hash";
+import Subscription_Type from "./models/Subscription_Type";
 async function seed() {
   try {
     // ⚠️ This will drop & recreate tables
     await repository.sequelizeClient.sync({ force: true });
 
     // --- Users ---
+    await User.create({
+      name: "mohamed",
+      username: "mohamed",
+      password: await hashPassword("123456"),
+      role: Role.ADMIN,
+    });
     const users = await Promise.all(
       Array.from({ length: 10 }).map(() =>
         User.create({
@@ -37,20 +45,26 @@ async function seed() {
           street: faker.location.streetAddress(),
           phone: faker.phone.number(),
           user_id: faker.helpers.arrayElement(users).id,
+          document_link: "",
           subscriptions: [],
         })
       )
     );
 
     // --- Subscriptions ---
+    const subscription_types = await Promise.all(
+      Array.from({ length: 5 }).map(() =>
+        Subscription_Type.create({
+          sub_type: faker.company.name(),
+          sub_image: faker.company.name(),
+        })
+      )
+    );
+    // --- Subscriptions ---
     const subscriptions = await Promise.all(
       Array.from({ length: 5 }).map(() =>
         Subscription.create({
-          sub_type: faker.helpers.arrayElement([
-            SUB.electricity,
-            SUB.gas,
-            SUB.internet,
-          ]),
+          sub_id: faker.helpers.arrayElement(subscription_types).id,
           sub_name: faker.company.name(),
           company: faker.company.name(),
           clients: [],
@@ -63,6 +77,7 @@ async function seed() {
       clients.map((client) =>
         Client_Sub.create({
           client_id: client.id,
+          user_id: 1,
           sub_id: faker.helpers.arrayElement(subscriptions).id,
           order_num: faker.string.alphanumeric(8),
           your_order_num: faker.string.alphanumeric(6),
@@ -86,11 +101,10 @@ async function seed() {
     );
 
     await Promise.all(
-      Array.from({ length: 12 }).map(() =>
+      Array.from({ length: 50 }).map(() =>
         Feedback.create({
           feedback: faker.lorem.sentences(2),
           client_id: faker.helpers.arrayElement(clients).id,
-          client: clients[0],
         })
       )
     );

@@ -1,4 +1,4 @@
-import e, { Request, Response } from "express";
+import { Request, Response } from "express";
 import Subscription from "../models/Subscription";
 
 export const createSubscription = async (req: Request, res: Response) => {
@@ -50,10 +50,13 @@ export const deleteSubscription = async (req: Request, res: Response) => {
 
 export const getSubscriptions = async (req: Request, res: Response) => {
   try {
-    const subscriptions = await Subscription.findAll();
+    const subscriptions = await Subscription.findAll({});
     if (!subscriptions) {
       return res.status(404).json({ message: "No subscriptions found" });
     }
+    return res
+      .status(200)
+      .json({ Message: "Subscriptions fetched succeffully", subscriptions });
   } catch (error) {
     return res
       .status(500)

@@ -19,15 +19,12 @@ export const getClients = async (req: Request, res: Response) => {
 
 export const createClient = async (req: Request, res: Response) => {
   const clientData = req.body;
-  try {
-    const newClient = await Client.create(clientData);
+  const newClient = await Client.create({
+    ...clientData,
+    user_id: (req as any).user.dataValues.id,
+  });
 
-    return res
-      .status(201)
-      .json({ message: "Client created", client: newClient });
-  } catch (error) {
-    return res.status(500).json({ message: "Error creating client", error });
-  }
+  return res.status(201).json({ message: "Client created", client: newClient });
 };
 
 export const getClientById = async (req: Request, res: Response) => {
@@ -40,7 +37,7 @@ export const getClientById = async (req: Request, res: Response) => {
         { model: Feedback },
         // include Client_Sub model
       ],
-      order: [[Feedback, "created_at", "DESC"]],
+      order: [["feedbacks", "created_at", "DESC"]],
     });
 
     if (!client) {
@@ -71,7 +68,7 @@ export const updateClient = async (req: Request, res: Response) => {
 
 export const deleteClient = async (req: Request, res: Response) => {
   const { id } = req.params;
-  if ((req as any).user.role !== "admin") {
+  if ((req as any).user.dataValues.role !== "admin") {
     return res.status(403).json({ message: "Only admins can delete clients" });
   }
 

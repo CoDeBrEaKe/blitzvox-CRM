@@ -26,6 +26,7 @@ export const addUser = async (req: Request, res: Response) => {
 
 export const loginUser = async (req: Request, res: Response) => {
   const credintials = req.body;
+
   const user = await User.findOne({
     where: { username: credintials.username },
   });
