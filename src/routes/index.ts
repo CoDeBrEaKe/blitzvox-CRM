@@ -6,7 +6,7 @@ import { emailRoutes } from "./emailRoutes";
 import { clientRoutes } from "./clientRoutes";
 import { subscriptionRoutes } from "./subscriptionRoutes";
 import { createSubTypesRoutes } from "./subTypesRoutes";
-
+import { createClientSubRoutes } from "./clientSubsRoutes";
 export const createRoutes = async (app: Express) => {
   // Define routes here and import route files
   userRoutes(app);
@@ -15,4 +15,5 @@ export const createRoutes = async (app: Express) => {
   subscriptionRoutes(app);
   clientRoutes(app);
   createSubTypesRoutes(app);
+  createClientSubRoutes(app);
 };
