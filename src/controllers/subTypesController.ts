@@ -29,6 +29,7 @@ export const deleteSubType = async (req: Request, res: Response) => {
   }
   try {
     await type.destroy();
+    res.status(200).json({ message: "Subsctiption Type Deleted Successfully" });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
   }

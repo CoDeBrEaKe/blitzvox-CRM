@@ -47,7 +47,7 @@ export default class Client_Sub extends Model<
   @Column
   declare cost?: number;
   @Column
-  declare status?: number;
+  declare status?: string;
   @Column
   declare counter_number?: string;
   @Column

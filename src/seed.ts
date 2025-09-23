@@ -82,7 +82,7 @@ async function seed() {
           order_num: faker.string.alphanumeric(8),
           your_order_num: faker.string.alphanumeric(6),
           cost: faker.number.int({ min: 100, max: 5000 }),
-          status: faker.number.int({ min: 0, max: 1 }),
+          status: faker.string.alphanumeric(10),
           counter_number: faker.string.alphanumeric(10),
           consumption: faker.number.int({ min: 100, max: 10000 }),
           night_consumption: faker.number.int({ min: 0, max: 3000 }),

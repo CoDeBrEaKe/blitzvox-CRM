@@ -29,14 +29,11 @@ export const getSingleClientSubscribtion = async (
 
 export const createClientSub = async (req: Request, res: Response) => {
   const data = req.body;
-  try {
-    const clientSub = await Client_Sub.create(data);
-    res
-      .status(201)
-      .json({ message: "Subscribtion created successfully", clientSub });
-  } catch (error) {
-    res.status(500).json({ message: "Something went Wrong" });
-  }
+
+  const clientSub = await Client_Sub.create(data);
+  res
+    .status(201)
+    .json({ message: "Subscribtion created successfully", clientSub });
 };
 
 export const updateClientSub = async (req: Request, res: Response) => {
@@ -64,7 +61,9 @@ export const deleteClientSub = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Something went Wrong" });
     }
     await clientSub.destroy();
-    res.status(200).json({ message: "Subscribtion deleted successfully" });
+    res
+      .status(200)
+      .json({ message: "Client subscription deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Something went Wrong" });
   }
