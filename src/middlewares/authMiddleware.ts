@@ -7,7 +7,7 @@ export function authMiddleware(
   next: NextFunction
 ) {
   const token = req.cookies?.token; // read from cookie
-
+  console.log(token);
   if (!token) {
     return res.status(401).json({ message: "No token provided" });
   }

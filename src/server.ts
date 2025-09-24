@@ -12,7 +12,12 @@ export const createServer = () => {
     .use(express.urlencoded())
     .use(express.json())
     .use(cookieParser())
-    .use(cors());
+    .use(
+      cors({
+        origin: "http://127.0.0.1:8002", // Frontend URL
+        credentials: true,
+      })
+    );
   createRoutes(app);
   app.get("/", (req: Request, res: Response) => {
     res.status(200).json({

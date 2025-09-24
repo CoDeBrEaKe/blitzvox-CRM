@@ -7,4 +7,5 @@ export const userRoutes = async (app: Express) => {
   app.post("/login", userController.loginUser);
   app.post("/admin/users", authMiddleware, userController.addUser);
   app.get("/logout", authMiddleware, userController.logoutUser);
+  app.get("/me", authMiddleware, userController.me);
 };

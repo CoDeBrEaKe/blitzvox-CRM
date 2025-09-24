@@ -41,8 +41,8 @@ export const loginUser = async (req: Request, res: Response) => {
   res.cookie("token", generateToken({ ...user }), {
     maxAge: 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // set to true in production
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // set to 'none' in production
+    secure: false, // set to true in production
+    sameSite: "lax", // set to 'none' in production
   });
   res.status(200).json({ message: "Login Successful", user });
 };
@@ -50,4 +50,9 @@ export const loginUser = async (req: Request, res: Response) => {
 export const logoutUser = async (req: Request, res: Response) => {
   res.clearCookie("token");
   res.status(200).json({ message: "Logged out fetched successfully" });
+};
+
+export const me = async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  res.status(200).json({ user });
 };
