@@ -14,7 +14,7 @@ export const createServer = () => {
     .use(cookieParser())
     .use(
       cors({
-        origin: "http://127.0.0.1:8002", // Frontend URL
+        origin: ["http://127.0.0.1:8002", "http://localhost:8002"], // Frontend URL
         credentials: true,
       })
     );
