@@ -83,7 +83,6 @@ export default class Client extends Model<
   toJSON() {
     return {
       ...this.get(),
-      id: undefined,
     };
   }
 }

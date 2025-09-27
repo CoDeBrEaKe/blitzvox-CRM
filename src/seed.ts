@@ -43,7 +43,10 @@ async function seed() {
           first_name: faker.person.firstName(),
           company_name: faker.company.name(),
           street: faker.location.streetAddress(),
+          city: faker.location.city(),
+          email: faker.person.fullName(),
           phone: faker.phone.number(),
+
           user_id: faker.helpers.arrayElement(users).id,
           document_link: "",
           subscriptions: [],
@@ -75,28 +78,30 @@ async function seed() {
     // --- Client_Sub (link Clients & Subscriptions) ---
     await Promise.all(
       clients.map((client) =>
-        Client_Sub.create({
-          client_id: client.id,
-          user_id: 1,
-          sub_id: faker.helpers.arrayElement(subscriptions).id,
-          order_num: faker.string.alphanumeric(8),
-          your_order_num: faker.string.alphanumeric(6),
-          cost: faker.number.int({ min: 100, max: 5000 }),
-          status: faker.string.alphanumeric(10),
-          counter_number: faker.string.alphanumeric(10),
-          consumption: faker.number.int({ min: 100, max: 10000 }),
-          night_consumption: faker.number.int({ min: 0, max: 3000 }),
-          paid: faker.datatype.boolean(),
-          paid_date: faker.date.past(),
-          rl: faker.datatype.boolean(),
-          rl_date: faker.date.past(),
-          termination_date: faker.date.future(),
-          sign_date: faker.date.past(),
-          contract_time: faker.helpers.arrayElement([
-            TIME.oneYear,
-            TIME.twoYear,
-          ]),
-        })
+        Array.from({ length: 2 }).map(() =>
+          Client_Sub.create({
+            client_id: client.id,
+            user_id: 1,
+            sub_id: faker.helpers.arrayElement(subscriptions).id,
+            order_num: faker.string.alphanumeric(8),
+            your_order_num: faker.string.alphanumeric(6),
+            cost: faker.number.int({ min: 100, max: 5000 }),
+            status: faker.string.alphanumeric(10),
+            counter_number: faker.string.alphanumeric(10),
+            consumption: faker.number.int({ min: 100, max: 10000 }),
+            night_consumption: faker.number.int({ min: 0, max: 3000 }),
+            paid: faker.datatype.boolean(),
+            paid_date: faker.date.past(),
+            rl: faker.datatype.boolean(),
+            rl_date: faker.date.past(),
+            termination_date: faker.date.future(),
+            sign_date: faker.date.past(),
+            contract_time: faker.helpers.arrayElement([
+              TIME.oneYear,
+              TIME.twoYear,
+            ]),
+          })
+        )
       )
     );
 
