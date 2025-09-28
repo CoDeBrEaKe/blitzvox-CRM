@@ -79,6 +79,8 @@ export default class Client extends Model<
   declare assignedTo?: InferAttributes<User>;
   @HasMany(() => Feedback)
   declare feedbacks?: InferAttributes<Feedback>[];
+  @HasMany(() => Client_Sub)
+  declare subs?: InferAttributes<Client_Sub>[];
 
   toJSON() {
     return {

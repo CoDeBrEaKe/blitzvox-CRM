@@ -3,12 +3,17 @@ import Client from "../models/Client";
 import User from "../models/User";
 import Subscription from "../models/Subscription";
 import Feedback from "../models/Feedback";
+import Subscription_Type from "../models/Subscription_Type";
+import Client_Sub from "../models/Client_Sub";
 
 export const getClients = async (req: Request, res: Response) => {
   const clients = await Client.findAll({
     include: [
       { model: User }, // include User model
-      { model: Subscription }, // include Client_Sub model
+      {
+        model: Client_Sub,
+        include: [{ model: User }],
+      }, // include Client_Sub model
     ],
   });
   if (!clients) {
@@ -33,9 +38,15 @@ export const getClientById = async (req: Request, res: Response) => {
     const client = await Client.findByPk(id, {
       include: [
         { model: User }, // include User model
-        { model: Subscription }, // include Client_Sub model
+        {
+          model: Client_Sub,
+          include: [{ model: User }],
+        }, // include Client_Sub model
+        {
+          model: Subscription,
+          include: [{ model: Subscription_Type }],
+        },
         { model: Feedback },
-        // include Client_Sub model
       ],
       order: [["feedbacks", "created_at", "DESC"]],
     });

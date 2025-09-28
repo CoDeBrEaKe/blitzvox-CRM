@@ -108,4 +108,7 @@ export default class Client_Sub extends Model<
     primaryKey: true,
   })
   declare sub_id: number;
+
+  @BelongsTo(() => User, "user_id")
+  declare creator?: InferAttributes<User>;
 }
