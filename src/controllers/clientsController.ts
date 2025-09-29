@@ -6,7 +6,19 @@ import Feedback from "../models/Feedback";
 import Subscription_Type from "../models/Subscription_Type";
 import Client_Sub from "../models/Client_Sub";
 
-export const getClients = async (req: Request, res: Response) => {
+interface UserQueryParams {
+  name?: string;
+  email?: string;
+  phone?: string;
+  city?: string;
+  company_name?: string;
+  page?: string;
+  limit?: string;
+}
+export const getClients = async (
+  req: Request<{}, {}, {}, UserQueryParams>,
+  res: Response
+) => {
   const clients = await Client.findAll({
     include: [
       { model: User }, // include User model
@@ -16,6 +28,19 @@ export const getClients = async (req: Request, res: Response) => {
       }, // include Client_Sub model
     ],
   });
+  const {
+    name,
+    email,
+    phone,
+    company_name = "1",
+    city,
+    page = "1",
+    limit = "2",
+  } = req.query;
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+  console.log(name, email, phone, company_name, city);
+
   if (!clients) {
     return res.status(404).json({ message: "No clients found" });
   }
