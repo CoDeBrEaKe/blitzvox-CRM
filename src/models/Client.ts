@@ -76,7 +76,7 @@ export default class Client extends Model<
   @BelongsToMany(() => Subscription, () => Client_Sub)
   declare subscriptions: InferAttributes<Subscription>[];
   @BelongsTo(() => User)
-  declare assignedTo?: InferAttributes<User>;
+  declare assigned_to?: InferAttributes<User>;
   @HasMany(() => Feedback)
   declare feedbacks?: InferAttributes<Feedback>[];
   @HasMany(() => Client_Sub)

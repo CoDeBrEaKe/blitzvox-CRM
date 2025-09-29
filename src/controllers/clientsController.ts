@@ -70,11 +70,22 @@ export const updateClient = async (req: Request, res: Response) => {
     if (!client) {
       res.status(404).json({ message: "No Clients found" });
     }
-    res.status(200).json({ message: "Client updated successfully", client });
+    if (
+      (req as any).user.role != "admin" &&
+      client?.admin_note != updateData.admin_note
+    ) {
+      return res.status(401).json({ message: "You are Unauthorized" });
+    }
+    const result = await client?.update(updateData);
+    if (!result) {
+      return res.status(500).json({ message: "Something wrong happened" });
+    }
+    return res
+      .status(200)
+      .json({ message: "Client updated successfully", client });
   } catch (error) {
     res.status(500).json({ message: "Error updating client", error });
   }
-  //   console.log("Token:", token);
 };
 
 export const deleteClient = async (req: Request, res: Response) => {
