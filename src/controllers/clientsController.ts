@@ -5,6 +5,7 @@ import Subscription from "../models/Subscription";
 import Feedback from "../models/Feedback";
 import Subscription_Type from "../models/Subscription_Type";
 import Client_Sub from "../models/Client_Sub";
+import { InferAttributes, Op, WhereOptions } from "sequelize";
 
 interface UserQueryParams {
   name?: string;
@@ -19,15 +20,7 @@ export const getClients = async (
   req: Request<{}, {}, {}, UserQueryParams>,
   res: Response
 ) => {
-  const clients = await Client.findAll({
-    include: [
-      { model: User }, // include User model
-      {
-        model: Client_Sub,
-        include: [{ model: User }],
-      }, // include Client_Sub model
-    ],
-  });
+  const keys = Object.keys(req.query);
   const {
     name,
     email,
@@ -39,8 +32,54 @@ export const getClients = async (
   } = req.query;
   const pageNum = parseInt(page);
   const limitNum = parseInt(limit);
-  console.log(name, email, phone, company_name, city);
 
+  const where: WhereOptions<InferAttributes<Client>> = {};
+
+  if (keys.length) {
+    if (keys[0] == "name") {
+      (where as any)[Op.or] = [
+        {
+          first_name: {
+            [Op.iLike]: `%${(req as any).query[keys[0]]}%`,
+          },
+        },
+        {
+          family_name: {
+            [Op.iLike]: `%${(req as any).query[keys[0]]}%`,
+          },
+        },
+      ];
+    } else {
+      (where as any)[Op.or] = [
+        { [keys[0]]: { [Op.iLike]: `%${(req as any).query[keys[0]]}%` } },
+      ];
+    }
+  } else {
+  }
+
+  const clients = await Client.findAll({
+    where,
+    include: [
+      { model: User }, // include User model
+      {
+        model: Subscription,
+        attributes: ["sub_id"],
+        include: [{ model: Subscription_Type }],
+      },
+      {
+        model: Feedback,
+        order: ["ASC"],
+      },
+      {
+        model: Client_Sub,
+        include: [{ model: User, attributes: ["name"] }],
+      }, // include Client_Sub model
+    ],
+
+    limit: limitNum,
+    offset: (pageNum - 1) * limitNum,
+  });
+  console.log(clients, clients.length);
   if (!clients) {
     return res.status(404).json({ message: "No clients found" });
   }
@@ -90,27 +129,16 @@ export const getClientById = async (req: Request, res: Response) => {
 export const updateClient = async (req: Request, res: Response) => {
   const { id } = req.params;
   const updateData = req.body;
-  try {
-    const client = await Client.findOne({ where: { id } });
-    if (!client) {
-      res.status(404).json({ message: "No Clients found" });
-    }
-    if (
-      (req as any).user.role != "admin" &&
-      client?.admin_note != updateData.admin_note
-    ) {
-      return res.status(401).json({ message: "You are Unauthorized" });
-    }
-    const result = await client?.update(updateData);
-    if (!result) {
-      return res.status(500).json({ message: "Something wrong happened" });
-    }
-    return res
-      .status(200)
-      .json({ message: "Client updated successfully", client });
-  } catch (error) {
-    res.status(500).json({ message: "Error updating client", error });
+  let client = await Client.findByPk(id);
+  if (!client) {
+    res.status(404).json({ message: "No Clients found" });
   }
+
+  const result = await client?.update(updateData);
+  console.log(result);
+  return res
+    .status(200)
+    .json({ message: "Client updated successfully", client });
 };
 
 export const deleteClient = async (req: Request, res: Response) => {

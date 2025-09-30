@@ -13,6 +13,7 @@ export function authMiddleware(
 
   try {
     const decoded = verifyToken(token);
+
     (req as any).user = decoded;
     next();
   } catch {
