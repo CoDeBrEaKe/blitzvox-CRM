@@ -111,4 +111,8 @@ export default class Client_Sub extends Model<
 
   @BelongsTo(() => User, "user_id")
   declare creator?: InferAttributes<User>;
+  @BelongsTo(() => Client, "client_id")
+  declare client?: InferAttributes<Client>;
+  @BelongsTo(() => Subscription, "sub_id")
+  declare subscription?: InferAttributes<Subscription>;
 }

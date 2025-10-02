@@ -1,8 +1,16 @@
 import { Request, Response } from "express";
 import Client_Sub from "../models/Client_Sub";
+import Client from "../models/Client";
+import Subscription from "../models/Subscription";
+import Subscription_Type from "../models/Subscription_Type";
 
 export const getClientSubscribtions = async (req: Request, res: Response) => {
-  const clientSubs = await Client_Sub.findAll();
+  const clientSubs = await Client_Sub.findAll({
+    include: [
+      { model: Client },
+      { model: Subscription, include: [{ model: Subscription_Type }] },
+    ],
+  });
   if (!clientSubs) {
     return res
       .status(404)
@@ -10,7 +18,7 @@ export const getClientSubscribtions = async (req: Request, res: Response) => {
   }
   res
     .status(200)
-    .json({ message: "No Subscribtions for this client yet", clientSubs });
+    .json({ message: "Subscriptions Fetched successfully", clientSubs });
 };
 
 export const getSingleClientSubscribtion = async (

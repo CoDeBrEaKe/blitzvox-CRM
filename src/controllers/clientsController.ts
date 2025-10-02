@@ -134,11 +134,14 @@ export const updateClient = async (req: Request, res: Response) => {
     res.status(404).json({ message: "No Clients found" });
   }
 
-  const result = await client?.update(updateData);
-  console.log(result);
-  return res
-    .status(200)
-    .json({ message: "Client updated successfully", client });
+  try {
+    const result = await client?.update(updateData);
+    return res
+      .status(200)
+      .json({ message: "Client updated successfully", client });
+  } catch (e) {
+    return res.status(500).json({ message: "Er is iets misgegaan" });
+  }
 };
 
 export const deleteClient = async (req: Request, res: Response) => {

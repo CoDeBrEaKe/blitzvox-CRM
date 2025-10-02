@@ -3,27 +3,27 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 import * as clientSubController from "../controllers/clientSubscriptionsController";
 export const createClientSubRoutes = async (app: Express) => {
   app.get(
-    "/client-subscribtion",
+    "/client-subscription",
     authMiddleware,
     clientSubController.getClientSubscribtions
   );
   app.get(
-    "/client-subscribtion/:id",
+    "/client-subscription/:id",
     authMiddleware,
     clientSubController.getSingleClientSubscribtion
   );
   app.post(
-    "/client-subscribtion",
+    "/client-subscription",
     authMiddleware,
     clientSubController.createClientSub
   );
   app.put(
-    "/client-subscribtion/:id",
+    "/client-subscription/:id",
     authMiddleware,
     clientSubController.updateClientSub
   );
   app.delete(
-    "/client-subscribtion/:id",
+    "/client-subscription/:id",
     authMiddleware,
     clientSubController.deleteClientSub
   );
