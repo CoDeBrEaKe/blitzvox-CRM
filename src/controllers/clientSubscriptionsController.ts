@@ -3,13 +3,19 @@ import Client_Sub from "../models/Client_Sub";
 import Client from "../models/Client";
 import Subscription from "../models/Subscription";
 import Subscription_Type from "../models/Subscription_Type";
+import User from "../models/User";
 
 export const getClientSubscribtions = async (req: Request, res: Response) => {
   const clientSubs = await Client_Sub.findAll({
     include: [
+      { model: User },
       { model: Client },
       { model: Subscription, include: [{ model: Subscription_Type }] },
     ],
+    raw: true,
+    nest: false,
+    limit: 10,
+    offset: (1 - 1) * 10,
   });
   if (!clientSubs) {
     return res
@@ -26,7 +32,15 @@ export const getSingleClientSubscribtion = async (
   res: Response
 ) => {
   const { id } = req.params;
-  const clientSub = await Client_Sub.findByPk(id);
+  const clientSub = await Client_Sub.findByPk(id, {
+    include: [
+      { model: User },
+      { model: Client },
+      { model: Subscription, include: [{ model: Subscription_Type }] },
+    ],
+    raw: true,
+    nest: false,
+  });
   if (!clientSub) {
     return res.status(404).json({ message: "No Subscribtion found" });
   }

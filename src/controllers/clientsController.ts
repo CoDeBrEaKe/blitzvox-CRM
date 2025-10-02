@@ -5,7 +5,7 @@ import Subscription from "../models/Subscription";
 import Feedback from "../models/Feedback";
 import Subscription_Type from "../models/Subscription_Type";
 import Client_Sub from "../models/Client_Sub";
-import { InferAttributes, Op, WhereOptions } from "sequelize";
+import { InferAttributes, Op, Sequelize, WhereOptions } from "sequelize";
 
 interface UserQueryParams {
   name?: string;
@@ -21,15 +21,7 @@ export const getClients = async (
   res: Response
 ) => {
   const keys = Object.keys(req.query);
-  const {
-    name,
-    email,
-    phone,
-    company_name = "1",
-    city,
-    page = "1",
-    limit = "10",
-  } = req.query;
+  const { page = "1", limit = "10" } = req.query;
   const pageNum = parseInt(page);
   const limitNum = parseInt(limit);
 
@@ -63,9 +55,14 @@ export const getClients = async (
       { model: User }, // include User model
       {
         model: Subscription,
-        attributes: ["sub_id"],
-        include: [{ model: Subscription_Type }],
+
+        include: [
+          {
+            model: Subscription_Type,
+          },
+        ],
       },
+
       {
         model: Feedback,
         order: ["ASC"],
@@ -79,7 +76,6 @@ export const getClients = async (
     limit: limitNum,
     offset: (pageNum - 1) * limitNum,
   });
-  console.log(clients, clients.length);
   if (!clients) {
     return res.status(404).json({ message: "No clients found" });
   }
