@@ -28,34 +28,34 @@ export const getClientSubscribtions = async (
 
   let where: WhereOptions<InferAttributes<Client_Sub>> = {};
 
-  if (keys.length) {
-    let col = keys[0].split(".")[keys[0].split(".").length - 1];
-    if (keys[0] == "subscription.type.sub_image") {
+  if (keys.length > 2) {
+    let col = keys[2].split(".")[keys[2].split(".").length - 1];
+    if (keys[2] == "subscription.type.sub_image") {
       (where as any)[Op.or] = [
         {
           sub_type: {
-            [Op.iLike]: `%${(req as any).query[keys[0]]}%`,
+            [Op.iLike]: `%${(req as any).query[keys[2]]}%`,
           },
         },
       ];
-    } else if (keys[0] == "client.first_name") {
+    } else if (keys[2] == "client.first_name") {
       (where as any)[Op.or] = [
         {
           first_name: {
-            [Op.iLike]: `%${(req as any).query[keys[0]]}%`,
+            [Op.iLike]: `%${(req as any).query[keys[2]]}%`,
           },
         },
         {
           family_name: {
-            [Op.iLike]: `%${(req as any).query[keys[0]]}%`,
+            [Op.iLike]: `%${(req as any).query[keys[2]]}%`,
           },
         },
       ];
-    } else if (keys[0] == "sign_date") {
+    } else if (keys[2] == "sign_date") {
       (where as any) = {
         sign_date: {
           [Op.between]: [
-            new Date((req as any).query[keys[0]]), // start date from query
+            new Date((req as any).query[keys[2]]), // start date from query
             new Date(), // current time
           ],
         },
@@ -64,7 +64,7 @@ export const getClientSubscribtions = async (
       (where as any) = [
         {
           [col]: {
-            [Op.iLike]: `%${(req as any).query[keys[0]]}%`,
+            [Op.iLike]: `%${(req as any).query[keys[2]]}%`,
           },
         },
       ];
@@ -73,26 +73,26 @@ export const getClientSubscribtions = async (
   const clientSubs = await Client_Sub.findAll({
     where:
       keys.length &&
-      keys[0] != "client.first_name" &&
-      keys[0] != "subscription.sub_name" &&
-      keys[0] != "subscription.type.sub_image"
+      keys[2] != "client.first_name" &&
+      keys[2] != "subscription.sub_name" &&
+      keys[2] != "subscription.type.sub_image"
         ? where
         : {},
     include: [
       { model: User },
       {
         model: Client,
-        where: keys.length && keys[0] == "client.first_name" ? where : {},
+        where: keys.length && keys[2] == "client.first_name" ? where : {},
       },
       {
         model: Subscription,
 
-        where: keys.length && keys[0] == "subscription.sub_name" ? where : {},
+        where: keys.length && keys[2] == "subscription.sub_name" ? where : {},
         include: [
           {
             model: Subscription_Type,
             where:
-              keys.length && keys[0] == "subscription.type.sub_image"
+              keys.length && keys[2] == "subscription.type.sub_image"
                 ? where
                 : {},
           },
@@ -104,14 +104,53 @@ export const getClientSubscribtions = async (
     limit: limitNum,
     offset: (pageNum - 1) * limitNum,
   });
+  const clientSubsCount = await Client_Sub.count({
+    where:
+      keys.length &&
+      keys[2] != "client.first_name" &&
+      keys[2] != "subscription.sub_name" &&
+      keys[2] != "subscription.type.sub_image"
+        ? where
+        : {},
+    include: [
+      { model: User },
+      {
+        model: Client,
+        where: keys.length && keys[2] == "client.first_name" ? where : {},
+      },
+      {
+        model: Subscription,
+
+        where: keys.length && keys[2] == "subscription.sub_name" ? where : {},
+        include: [
+          {
+            model: Subscription_Type,
+            where:
+              keys.length && keys[2] == "subscription.type.sub_image"
+                ? where
+                : {},
+          },
+        ],
+      },
+    ],
+  });
   if (!clientSubs) {
     return res
       .status(404)
       .json({ message: "No Subscribtions for this client yet" });
   }
-  res
-    .status(200)
-    .json({ message: "Subscriptions Fetched successfully", clientSubs });
+  res.status(200).json({
+    message: "Subscriptions Fetched successfully",
+    clientSubs,
+    pagination: {
+      currentPage: pageNum,
+      totalPages: Math.ceil(clientSubsCount / limitNum),
+      totalItems: clientSubsCount,
+      itemsPerPage: limitNum,
+      hasNext: pageNum * limitNum < clientSubsCount,
+      hasPrev: pageNum > 1,
+    },
+  });
 };
 
 export const getSingleClientSubscribtion = async (

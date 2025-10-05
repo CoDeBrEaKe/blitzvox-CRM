@@ -1,6 +1,15 @@
 import { Request, Response } from "express";
 import Email from "../models/Email";
 import { MessageFactory } from "../services/messageService";
+import { InferAttributes, WhereOptions } from "sequelize";
+import { Op } from "sequelize";
+
+interface UserQueryParams {
+  subject?: string;
+  content?: string;
+  page?: string;
+  limit?: string;
+}
 
 export const createEmail = async (req: Request, res: Response) => {
   let { subject, content } = req.body;
@@ -16,13 +25,44 @@ export const createEmail = async (req: Request, res: Response) => {
   }
 };
 
-export const getEmails = async (req: Request, res: Response) => {
+export const getEmails = async (
+  req: Request<{}, {}, {}, UserQueryParams>,
+  res: Response
+) => {
+  const keys = Object.keys(req.query);
+  const { page = "1", limit = "10" } = req.query;
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+
+  const key = keys[2];
+  const value = (req.query as any)[key];
+  const where: WhereOptions<InferAttributes<Email>> = {};
+
+  if (keys.length > 2) {
+    (where as any)[Op.or] = [{ [key]: { [Op.iLike]: `%${value}%` } }];
+  }
   try {
-    const emails = await Email.findAll();
+    const emails = await Email.findAll({
+      where: where,
+      limit: limitNum,
+      offset: (pageNum - 1) * limitNum,
+    });
+    const totalCount = await Email.count({ where: where });
     if (!emails) {
       return res.status(404).json({ message: "No email templates found" });
     }
-    res.json({ message: "Email templates fetched successfully", emails });
+    res.json({
+      message: "Email templates fetched successfully",
+      emails,
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(totalCount / limitNum),
+        totalItems: totalCount,
+        itemsPerPage: limitNum,
+        hasNext: pageNum * limitNum < totalCount,
+        hasPrev: pageNum > 1,
+      },
+    });
   } catch (error) {
     return res
       .status(500)

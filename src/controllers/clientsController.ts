@@ -26,23 +26,23 @@ export const getClients = async (
   const limitNum = parseInt(limit);
 
   const where: WhereOptions<InferAttributes<Client>> = {};
-  if (keys.length) {
-    if (keys[0] == "name") {
+  if (keys.length > 2) {
+    if (keys[2] == "name") {
       (where as any)[Op.or] = [
         {
           first_name: {
-            [Op.iLike]: `%${(req as any).query[keys[0]]}%`,
+            [Op.iLike]: `%${(req as any).query[keys[2]]}%`,
           },
         },
         {
           family_name: {
-            [Op.iLike]: `%${(req as any).query[keys[0]]}%`,
+            [Op.iLike]: `%${(req as any).query[keys[2]]}%`,
           },
         },
       ];
     } else {
       (where as any)[Op.or] = [
-        { [keys[0]]: { [Op.iLike]: `%${(req as any).query[keys[0]]}%` } },
+        { [keys[2]]: { [Op.iLike]: `%${(req as any).query[keys[2]]}%` } },
       ];
     }
   }
@@ -73,10 +73,22 @@ export const getClients = async (
     limit: limitNum,
     offset: (pageNum - 1) * limitNum,
   });
+  const totalCount = await Client.count({ where });
   if (!clients) {
     return res.status(404).json({ message: "No clients found" });
   }
-  res.status(200).json({ message: "Clients fetched successfully", clients });
+  res.status(200).json({
+    message: "Clients fetched successfully",
+    clients,
+    pagination: {
+      currentPage: pageNum,
+      totalPages: Math.ceil(totalCount / limitNum),
+      totalItems: totalCount,
+      itemsPerPage: limitNum,
+      hasNext: pageNum * limitNum < totalCount,
+      hasPrev: pageNum > 1,
+    },
+  });
 };
 
 export const createClient = async (req: Request, res: Response) => {

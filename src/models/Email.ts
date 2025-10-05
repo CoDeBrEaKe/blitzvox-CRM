@@ -43,7 +43,6 @@ export default class Email extends Model<
   toJSON() {
     return {
       ...this.get(),
-      id: undefined,
     };
   }
 }

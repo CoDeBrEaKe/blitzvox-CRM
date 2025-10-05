@@ -1,5 +1,13 @@
 import { Request, Response } from "express";
 import Subscription_Type from "../models/Subscription_Type";
+import { InferAttributes, WhereOptions } from "sequelize";
+import { Op } from "sequelize";
+
+interface UserQueryParams {
+  sub_type?: string;
+  page?: string;
+  limit?: string;
+}
 
 export const createSubTypes = async (req: Request, res: Response) => {
   const data = req.body;
@@ -12,13 +20,40 @@ export const createSubTypes = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went Wrong" });
   }
 };
-export const getSubTypes = async (req: Request, res: Response) => {
-  const types = await Subscription_Type.findAll();
+export const getSubTypes = async (
+  req: Request<{}, {}, {}, UserQueryParams>,
+  res: Response
+) => {
+  const keys = Object.keys(req.query);
+  const { page = "1", limit = "10" } = req.query;
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+
+  const where: WhereOptions<InferAttributes<Subscription_Type>> = {};
+  if (keys.length > 2) {
+    (where as any)[Op.or] = [
+      { [keys[2]]: { [Op.iLike]: `%${(req as any).query[keys[2]]}%` } },
+    ];
+  }
+  const types = await Subscription_Type.findAll({ where: where });
 
   if (!types) {
     return res.status(404).json({ message: "No Types found" });
   }
-  res.status(200).json({ message: "Types fetched Succeffully", types });
+  const totalCount = await Subscription_Type.count({ where: where });
+
+  res.status(200).json({
+    message: "Types fetched Succeffully",
+    types,
+    pagination: {
+      currentPage: pageNum,
+      totalPages: Math.ceil(totalCount / limitNum),
+      totalItems: totalCount,
+      itemsPerPage: limitNum,
+      hasNext: pageNum * limitNum < totalCount,
+      hasPrev: pageNum > 1,
+    },
+  });
 };
 export const deleteSubType = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -42,7 +77,7 @@ export const getSubTypeById = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "No Subscription Found " });
   }
   try {
-    return res.status(404).json({ message: "No Subscription Found ", type });
+    return res.status(200).json({ message: "No Subscription Found ", type });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
   }
