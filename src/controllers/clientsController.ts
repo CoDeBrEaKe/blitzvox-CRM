@@ -5,7 +5,7 @@ import Subscription from "../models/Subscription";
 import Feedback from "../models/Feedback";
 import Subscription_Type from "../models/Subscription_Type";
 import Client_Sub from "../models/Client_Sub";
-import { InferAttributes, Op, Sequelize, WhereOptions } from "sequelize";
+import { InferAttributes, Op, WhereOptions } from "sequelize";
 
 interface UserQueryParams {
   name?: string;
@@ -26,7 +26,6 @@ export const getClients = async (
   const limitNum = parseInt(limit);
 
   const where: WhereOptions<InferAttributes<Client>> = {};
-
   if (keys.length) {
     if (keys[0] == "name") {
       (where as any)[Op.or] = [
@@ -46,9 +45,7 @@ export const getClients = async (
         { [keys[0]]: { [Op.iLike]: `%${(req as any).query[keys[0]]}%` } },
       ];
     }
-  } else {
   }
-
   const clients = await Client.findAll({
     where,
     include: [

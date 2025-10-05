@@ -50,7 +50,6 @@ export default class Subscription_Type extends Model<
   toJSON() {
     return {
       ...this.get(),
-      id: undefined,
     };
   }
 }

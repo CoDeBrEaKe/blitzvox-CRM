@@ -89,7 +89,7 @@ export const up: Migration = async ({ context: sequelize }) => {
       allowNull: true,
     },
     contract_time: {
-      type: DataTypes.ENUM("1 Year", "2 Year"),
+      type: DataTypes.ENUM("1 Year", "2 Years"),
       allowNull: true,
     },
     family_count: {

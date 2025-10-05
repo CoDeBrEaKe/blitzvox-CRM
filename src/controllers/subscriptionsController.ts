@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Subscription from "../models/Subscription";
+import Subscription_Type from "../models/Subscription_Type";
 
 export const createSubscription = async (req: Request, res: Response) => {
   const data = req.body;
@@ -36,12 +37,12 @@ export const updateSubscription = async (req: Request, res: Response) => {
 
 export const deleteSubscription = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const subscription = await Subscription.findByPk(id);
+  if (!subscription) {
+    return res.status(404).json({ message: "subscription not found" });
+  }
+  await subscription.destroy();
   try {
-    const subscription = await Subscription.findByPk(id);
-    if (!subscription) {
-      return res.status(404).json({ message: "subscription not found" });
-    }
-    await subscription.destroy();
     return res.status(200).json({ message: "subscription Deleted" });
   } catch (error) {
     return res.status(500).json({ message: "Something wrong happened" });
@@ -50,7 +51,11 @@ export const deleteSubscription = async (req: Request, res: Response) => {
 
 export const getSubscriptions = async (req: Request, res: Response) => {
   try {
-    const subscriptions = await Subscription.findAll({});
+    const subscriptions = await Subscription.findAll({
+      include: { model: Subscription_Type },
+      raw: true,
+      nest: false,
+    });
     if (!subscriptions) {
       return res.status(404).json({ message: "No subscriptions found" });
     }
@@ -67,7 +72,11 @@ export const getSubscriptions = async (req: Request, res: Response) => {
 export const getSubscriptionById = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const subscription = await Subscription.findByPk(id);
+    const subscription = await Subscription.findByPk(id, {
+      include: { model: Subscription_Type },
+      raw: true,
+      nest: false,
+    });
     if (!subscription) {
       return res.status(404).json({ message: "subscription not found" });
     }

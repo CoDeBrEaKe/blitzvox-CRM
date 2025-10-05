@@ -4,18 +4,105 @@ import Client from "../models/Client";
 import Subscription from "../models/Subscription";
 import Subscription_Type from "../models/Subscription_Type";
 import User from "../models/User";
+import { InferAttributes, Op, WhereOptions } from "sequelize";
 
-export const getClientSubscribtions = async (req: Request, res: Response) => {
+interface UserQueryParams {
+  "client.name"?: string;
+  your_order_num?: string;
+  sign_date?: string;
+  "subscription.sub_name"?: string;
+  counter_number?: string;
+  "subscription.type.sub_image"?: string;
+  page?: string;
+  limit?: string;
+}
+
+export const getClientSubscribtions = async (
+  req: Request<{}, {}, {}, UserQueryParams>,
+  res: Response
+) => {
+  const keys = Object.keys(req.query);
+  const { page = "1", limit = "10" } = req.query;
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+
+  let where: WhereOptions<InferAttributes<Client_Sub>> = {};
+
+  if (keys.length) {
+    let col = keys[0].split(".")[keys[0].split(".").length - 1];
+    if (keys[0] == "subscription.type.sub_image") {
+      (where as any)[Op.or] = [
+        {
+          sub_type: {
+            [Op.iLike]: `%${(req as any).query[keys[0]]}%`,
+          },
+        },
+      ];
+    } else if (keys[0] == "client.first_name") {
+      (where as any)[Op.or] = [
+        {
+          first_name: {
+            [Op.iLike]: `%${(req as any).query[keys[0]]}%`,
+          },
+        },
+        {
+          family_name: {
+            [Op.iLike]: `%${(req as any).query[keys[0]]}%`,
+          },
+        },
+      ];
+    } else if (keys[0] == "sign_date") {
+      (where as any) = {
+        sign_date: {
+          [Op.between]: [
+            new Date((req as any).query[keys[0]]), // start date from query
+            new Date(), // current time
+          ],
+        },
+      };
+    } else {
+      (where as any) = [
+        {
+          [col]: {
+            [Op.iLike]: `%${(req as any).query[keys[0]]}%`,
+          },
+        },
+      ];
+    }
+  }
   const clientSubs = await Client_Sub.findAll({
+    where:
+      keys.length &&
+      keys[0] != "client.first_name" &&
+      keys[0] != "subscription.sub_name" &&
+      keys[0] != "subscription.type.sub_image"
+        ? where
+        : {},
     include: [
       { model: User },
-      { model: Client },
-      { model: Subscription, include: [{ model: Subscription_Type }] },
+      {
+        model: Client,
+        where: keys.length && keys[0] == "client.first_name" ? where : {},
+      },
+      {
+        model: Subscription,
+
+        where: keys.length && keys[0] == "subscription.sub_name" ? where : {},
+        include: [
+          {
+            model: Subscription_Type,
+            where:
+              keys.length && keys[0] == "subscription.type.sub_image"
+                ? where
+                : {},
+          },
+        ],
+      },
     ],
     raw: true,
     nest: false,
-    limit: 10,
-    offset: (1 - 1) * 10,
+    limit: limitNum,
+    offset: (pageNum - 1) * limitNum,
   });
   if (!clientSubs) {
     return res
