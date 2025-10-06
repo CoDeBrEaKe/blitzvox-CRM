@@ -27,7 +27,15 @@ export const getClients = async (
 
   const where: WhereOptions<InferAttributes<Client>> = {};
   if (keys.length > 2) {
-    if (keys[2] == "name") {
+    if (keys[2] == "subscriptions") {
+      (where as any)[Op.or] = [
+        {
+          sub_name: {
+            [Op.iLike]: `%${(req as any).query[keys[2]]}%`,
+          },
+        },
+      ];
+    } else if (keys[2] == "first_name") {
       (where as any)[Op.or] = [
         {
           first_name: {
@@ -46,34 +54,74 @@ export const getClients = async (
       ];
     }
   }
-  const clients = await Client.findAll({
-    where,
-    include: [
-      { model: User }, // include User model
-      {
-        model: Subscription,
 
-        include: [
-          {
-            model: Subscription_Type,
-          },
-        ],
-      },
+  let clients;
+  let totalCount;
+  const { id, role } = (req as any).user.dataValues;
+  if (keys[2] == "subscriptions") {
+    // When filtering by subscriptions
 
-      {
-        model: Feedback,
-        order: ["ASC"],
-      },
-      {
-        model: Client_Sub,
-        include: [{ model: User, attributes: ["name"] }],
-      }, // include Client_Sub model
-    ],
+    clients = await Client.findAll({
+      include: [
+        { model: User, where: { id: role == "admin" ? "" : id } },
+        {
+          model: Subscription,
+          where: where, // Apply where to subscriptions
+          required: true, // This makes it an INNER JOIN for subscriptions
+          include: [{ model: Subscription_Type }],
+        },
+        {
+          model: Feedback,
+          order: ["ASC"],
+        },
+        {
+          model: Client_Sub,
+          include: [{ model: User, attributes: ["name"] }],
+        },
+      ],
+      limit: limitNum,
+      offset: (pageNum - 1) * limitNum,
+    });
+    totalCount = await Client.count({
+      include: [
+        { model: User, where: { id: role == "admin" ? {} : id } },
+        {
+          model: Subscription,
+          where: where, // Apply where to subscriptions
+          required: true, // This makes it an INNER JOIN for subscriptions
+          include: [{ model: Subscription_Type }],
+        },
+      ],
+    });
+  } else {
+    // When not filtering by subscriptions
+    clients = await Client.findAll({
+      where: where, // Apply where to clients
+      include: [
+        { model: User, where: { id: role == "admin" ? "" : id } },
+        {
+          model: Subscription,
+          include: [{ model: Subscription_Type }],
+        },
+        {
+          model: Feedback,
+          order: ["ASC"],
+        },
+        {
+          model: Client_Sub,
+          include: [{ model: User, attributes: ["name"] }],
+        },
+      ],
+      limit: limitNum,
+      offset: (pageNum - 1) * limitNum,
+    });
 
-    limit: limitNum,
-    offset: (pageNum - 1) * limitNum,
-  });
-  const totalCount = await Client.count({ where });
+    totalCount = totalCount = await Client.count({
+      where: [where, { id: role == "admin" ? "" : id }],
+      include: [{ model: User, where: { id: role == "admin" ? "" : id } }], // Apply where to subscriptions
+    });
+  }
+
   if (!clients) {
     return res.status(404).json({ message: "No clients found" });
   }

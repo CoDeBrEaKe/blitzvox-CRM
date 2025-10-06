@@ -38,7 +38,7 @@ async function seed() {
 
     // --- Clients ---
     const clients = await Promise.all(
-      Array.from({ length: 8 }).map(() =>
+      Array.from({ length: 40 }).map(() =>
         Client.create({
           first_name: faker.person.firstName(),
           company_name: faker.company.name(),

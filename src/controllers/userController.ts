@@ -25,7 +25,7 @@ export const getUsers = async (
   const value = (req.query as any)[key];
   const where: WhereOptions<InferAttributes<User>> = {};
 
-  if (keys.length) {
+  if (keys.length > 2) {
     if (key === "role") {
       (where as any)[key] = value; // exact match
     } else {

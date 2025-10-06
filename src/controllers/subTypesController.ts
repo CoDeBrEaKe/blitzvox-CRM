@@ -35,7 +35,11 @@ export const getSubTypes = async (
       { [keys[2]]: { [Op.iLike]: `%${(req as any).query[keys[2]]}%` } },
     ];
   }
-  const types = await Subscription_Type.findAll({ where: where });
+  const types = await Subscription_Type.findAll({
+    where: where,
+    limit: limitNum,
+    offset: (pageNum - 1) * limitNum,
+  });
 
   if (!types) {
     return res.status(404).json({ message: "No Types found" });

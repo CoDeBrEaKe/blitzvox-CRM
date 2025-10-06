@@ -83,28 +83,42 @@ export const getSubscriptions = async (
   }
 
   try {
-    const subscriptions = await Subscription.findAll({
-      where: keys.length && keys[2] != "type.sub_type" ? where : {},
-      include: {
-        model: Subscription_Type,
-        where: keys.length && keys[2] == "type.sub_type" ? where : {},
-      },
-      raw: true,
-      nest: false,
-      limit: limitNum,
-      offset: (pageNum - 1) * limitNum,
-    });
+    let subscriptions;
+    let totalCount;
+    if (keys[2] == "type.sub_type") {
+      subscriptions = await Subscription.findAll({
+        include: {
+          model: Subscription_Type,
+          where,
+        },
+        raw: true,
+        nest: false,
+        limit: limitNum,
+        offset: (pageNum - 1) * limitNum,
+      });
+      totalCount = await Subscription.count({
+        include: {
+          model: Subscription_Type,
+          where,
+        },
+      });
+    } else {
+      subscriptions = await Subscription.findAll({
+        where,
+        include: {
+          model: Subscription_Type,
+        },
+        raw: true,
+        nest: false,
+        limit: limitNum,
+        offset: (pageNum - 1) * limitNum,
+      });
+      totalCount = await Subscription.count({ where });
+    }
     if (!subscriptions) {
       return res.status(404).json({ message: "No subscriptions found" });
     }
 
-    const totalCount = await Subscription.count({
-      where: keys.length && keys[2] != "type.sub_type" ? where : {},
-      include: {
-        model: Subscription_Type,
-        where: keys.length && keys[2] == "type.sub_type" ? where : {},
-      },
-    });
     return res.status(200).json({
       Message: "Subscriptions fetched succeffully",
       subscriptions,

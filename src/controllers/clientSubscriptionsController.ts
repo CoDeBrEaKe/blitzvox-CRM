@@ -27,35 +27,45 @@ export const getClientSubscribtions = async (
   const limitNum = parseInt(limit);
 
   let where: WhereOptions<InferAttributes<Client_Sub>> = {};
-
+  let clientSubs;
+  let clientSubsCount;
   if (keys.length > 2) {
-    let col = keys[2].split(".")[keys[2].split(".").length - 1];
-    if (keys[2] == "subscription.type.sub_image") {
+    let col = keys[2];
+
+    if (col == "subscription.type.sub_image") {
       (where as any)[Op.or] = [
         {
           sub_type: {
-            [Op.iLike]: `%${(req as any).query[keys[2]]}%`,
+            [Op.iLike]: `%${(req as any).query[col]}%`,
           },
         },
       ];
-    } else if (keys[2] == "client.first_name") {
+    } else if (col == "subscription.sub_name") {
+      (where as any)[Op.or] = [
+        {
+          sub_name: {
+            [Op.iLike]: `%${(req as any).query[col]}%`,
+          },
+        },
+      ];
+    } else if (col == "client.first_name") {
       (where as any)[Op.or] = [
         {
           first_name: {
-            [Op.iLike]: `%${(req as any).query[keys[2]]}%`,
+            [Op.iLike]: `%${(req as any).query[col]}%`,
           },
         },
         {
           family_name: {
-            [Op.iLike]: `%${(req as any).query[keys[2]]}%`,
+            [Op.iLike]: `%${(req as any).query[col]}%`,
           },
         },
       ];
-    } else if (keys[2] == "sign_date") {
+    } else if (col == "sign_date") {
       (where as any) = {
         sign_date: {
           [Op.between]: [
-            new Date((req as any).query[keys[2]]), // start date from query
+            new Date((req as any).query[col]), // start date from query
             new Date(), // current time
           ],
         },
@@ -64,76 +74,184 @@ export const getClientSubscribtions = async (
       (where as any) = [
         {
           [col]: {
-            [Op.iLike]: `%${(req as any).query[keys[2]]}%`,
+            [Op.iLike]: `%${(req as any).query[col]}%`,
           },
         },
       ];
     }
   }
-  const clientSubs = await Client_Sub.findAll({
-    where:
-      keys.length &&
-      keys[2] != "client.first_name" &&
-      keys[2] != "subscription.sub_name" &&
-      keys[2] != "subscription.type.sub_image"
-        ? where
-        : {},
-    include: [
-      { model: User },
-      {
-        model: Client,
-        where: keys.length && keys[2] == "client.first_name" ? where : {},
-      },
-      {
-        model: Subscription,
+  const { id, role } = (req as any).user.dataValues;
 
-        where: keys.length && keys[2] == "subscription.sub_name" ? where : {},
-        include: [
-          {
-            model: Subscription_Type,
-            where:
-              keys.length && keys[2] == "subscription.type.sub_image"
-                ? where
-                : {},
-          },
-        ],
-      },
-    ],
-    raw: true,
-    nest: false,
-    limit: limitNum,
-    offset: (pageNum - 1) * limitNum,
-  });
-  const clientSubsCount = await Client_Sub.count({
-    where:
-      keys.length &&
-      keys[2] != "client.first_name" &&
-      keys[2] != "subscription.sub_name" &&
-      keys[2] != "subscription.type.sub_image"
-        ? where
-        : {},
-    include: [
-      { model: User },
-      {
-        model: Client,
-        where: keys.length && keys[2] == "client.first_name" ? where : {},
-      },
-      {
-        model: Subscription,
+  if (keys[2] == "client.first_name") {
+    clientSubsCount = await Client_Sub.count({
+      include: [
+        { model: Client, where },
+        { model: User, where: { id: role == "admin" ? "" : id } },
+      ],
+    });
+    clientSubs = await Client_Sub.findAll({
+      include: [
+        { model: User, where: { id: role == "admin" ? "" : id } },
+        {
+          model: Client,
+          where: where,
+        },
+        {
+          model: Subscription,
 
-        where: keys.length && keys[2] == "subscription.sub_name" ? where : {},
-        include: [
-          {
-            model: Subscription_Type,
-            where:
-              keys.length && keys[2] == "subscription.type.sub_image"
-                ? where
-                : {},
-          },
-        ],
-      },
-    ],
-  });
+          include: [
+            {
+              model: Subscription_Type,
+            },
+          ],
+        },
+      ],
+      raw: true,
+      nest: false,
+      limit: limitNum,
+      offset: (pageNum - 1) * limitNum,
+    });
+  } else if (keys[2] == "subscription.type.sub_image") {
+    clientSubsCount = await Client_Sub.count({
+      include: [
+        { model: User, where: { id: role == "admin" ? "" : id } },
+        {
+          model: Subscription,
+          include: [
+            {
+              model: Subscription_Type,
+              where,
+            },
+          ],
+        },
+      ],
+    });
+    clientSubs = await Client_Sub.findAll({
+      include: [
+        { model: User },
+        {
+          model: Client,
+          include: [
+            {
+              model: User,
+              where: { id: role == "admin" ? "" : id },
+            },
+          ],
+        },
+        {
+          model: Subscription,
+          include: [
+            {
+              model: Subscription_Type,
+              where,
+            },
+          ],
+        },
+      ],
+      raw: true,
+      nest: false,
+      limit: limitNum,
+      offset: (pageNum - 1) * limitNum,
+    });
+  } else if (keys[2] == "subscription.sub_name") {
+    clientSubsCount = await Client_Sub.count({
+      include: [
+        { model: User, where: { id: role == "admin" ? "" : id } },
+        {
+          model: Subscription,
+          where,
+
+          include: [
+            {
+              model: Subscription_Type,
+            },
+          ],
+        },
+      ],
+    });
+    clientSubs = await Client_Sub.findAll({
+      include: [
+        { model: User },
+        {
+          model: Client,
+          include: [
+            {
+              model: User,
+              where: { id: role == "admin" ? "" : id },
+            },
+          ],
+        },
+        {
+          where,
+          model: Subscription,
+          include: [
+            {
+              model: Subscription_Type,
+            },
+          ],
+        },
+      ],
+      raw: true,
+      nest: false,
+      limit: limitNum,
+      offset: (pageNum - 1) * limitNum,
+    });
+  } else {
+    clientSubsCount = await Client_Sub.count({
+      where,
+
+      include: [
+        { model: User },
+        {
+          model: Client,
+          include: [
+            {
+              model: User,
+              where: { id: role == "admin" ? "" : id },
+            },
+          ],
+        },
+        {
+          model: Subscription,
+          include: [
+            {
+              model: Subscription_Type,
+            },
+          ],
+        },
+      ],
+    });
+    clientSubs = await Client_Sub.findAll({
+      where,
+
+      include: [
+        { model: User },
+        {
+          model: Client,
+          include: [
+            {
+              model: User,
+              where: { id: role == "admin" ? "" : id },
+            },
+          ],
+        },
+        {
+          model: Subscription,
+
+          include: [
+            {
+              model: Subscription_Type,
+            },
+          ],
+        },
+      ],
+      raw: true,
+      nest: false,
+      limit: limitNum,
+      offset: (pageNum - 1) * limitNum,
+    });
+  }
+
   if (!clientSubs) {
     return res
       .status(404)
