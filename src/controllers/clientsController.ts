@@ -25,7 +25,7 @@ export const getClients = async (
   const pageNum = parseInt(page);
   const limitNum = parseInt(limit);
 
-  const where: WhereOptions<InferAttributes<Client>> = {};
+  let where: WhereOptions<InferAttributes<Client>> = {};
   if (keys.length > 2) {
     if (keys[2] == "subscriptions") {
       (where as any)[Op.or] = [
@@ -62,8 +62,9 @@ export const getClients = async (
     // When filtering by subscriptions
 
     clients = await Client.findAll({
+      where: role === "admin" ? undefined : { user_id: id },
       include: [
-        { model: User, where: { id: role == "admin" ? "" : id } },
+        { model: User },
         {
           model: Subscription,
           where: where, // Apply where to subscriptions
@@ -84,21 +85,27 @@ export const getClients = async (
     });
     totalCount = await Client.count({
       include: [
-        { model: User, where: { id: role == "admin" ? {} : id } },
+        {
+          model: User,
+          where: role === "admin" ? undefined : { id: id },
+        },
         {
           model: Subscription,
-          where: where, // Apply where to subscriptions
-          required: true, // This makes it an INNER JOIN for subscriptions
-          include: [{ model: Subscription_Type }],
+          where: where,
+          required: true,
         },
       ],
     });
   } else {
     // When not filtering by subscriptions
+    let whereConditions = [where];
+    if (role !== "admin") {
+      whereConditions.push({ user_id: id });
+    }
     clients = await Client.findAll({
       where: where, // Apply where to clients
       include: [
-        { model: User, where: { id: role == "admin" ? "" : id } },
+        { model: User },
         {
           model: Subscription,
           include: [{ model: Subscription_Type }],
@@ -116,16 +123,16 @@ export const getClients = async (
       offset: (pageNum - 1) * limitNum,
     });
 
-    totalCount = totalCount = await Client.count({
-      where: [where, { id: role == "admin" ? "" : id }],
-      include: [{ model: User, where: { id: role == "admin" ? "" : id } }], // Apply where to subscriptions
+    totalCount = await Client.count({
+      where: whereConditions,
+      // Apply where to subscriptions
     });
   }
 
   if (!clients) {
     return res.status(404).json({ message: "No clients found" });
   }
-  res.status(200).json({
+  return res.status(200).json({
     message: "Clients fetched successfully",
     clients,
     pagination: {

@@ -86,12 +86,12 @@ export const getClientSubscribtions = async (
     clientSubsCount = await Client_Sub.count({
       include: [
         { model: Client, where },
-        { model: User, where: { id: role == "admin" ? "" : id } },
+        { model: User, where: role == "admin" ? undefined : { id: id } },
       ],
     });
     clientSubs = await Client_Sub.findAll({
       include: [
-        { model: User, where: { id: role == "admin" ? "" : id } },
+        { model: User, where: role == "admin" ? undefined : { id: id } },
         {
           model: Client,
           where: where,
@@ -114,7 +114,7 @@ export const getClientSubscribtions = async (
   } else if (keys[2] == "subscription.type.sub_image") {
     clientSubsCount = await Client_Sub.count({
       include: [
-        { model: User, where: { id: role == "admin" ? "" : id } },
+        { model: User, where: role == "admin" ? undefined : { id: id } },
         {
           model: Subscription,
           include: [
@@ -132,10 +132,7 @@ export const getClientSubscribtions = async (
         {
           model: Client,
           include: [
-            {
-              model: User,
-              where: { id: role == "admin" ? "" : id },
-            },
+            { model: User, where: role == "admin" ? undefined : { id: id } },
           ],
         },
         {
@@ -175,10 +172,7 @@ export const getClientSubscribtions = async (
         {
           model: Client,
           include: [
-            {
-              model: User,
-              where: { id: role == "admin" ? "" : id },
-            },
+            { model: User, where: role == "admin" ? undefined : { id: id } },
           ],
         },
         {
@@ -205,10 +199,7 @@ export const getClientSubscribtions = async (
         {
           model: Client,
           include: [
-            {
-              model: User,
-              where: { id: role == "admin" ? "" : id },
-            },
+            { model: User, where: role == "admin" ? undefined : { id: id } },
           ],
         },
         {
@@ -229,10 +220,7 @@ export const getClientSubscribtions = async (
         {
           model: Client,
           include: [
-            {
-              model: User,
-              where: { id: role == "admin" ? "" : id },
-            },
+            { model: User, where: role == "admin" ? undefined : { id: id } },
           ],
         },
         {
