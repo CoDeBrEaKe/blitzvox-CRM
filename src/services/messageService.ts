@@ -21,6 +21,7 @@ class EmailService extends MessageService {
         receiver,
         subject,
         html,
+        text: html.replace(/<[^>]+>/g, ""),
       };
 
       try {
