@@ -6,7 +6,9 @@ import Feedback from "../models/Feedback";
 import Subscription_Type from "../models/Subscription_Type";
 import Client_Sub from "../models/Client_Sub";
 import { InferAttributes, Op, WhereOptions } from "sequelize";
-
+import formidable from "formidable";
+import fs from "fs/promises";
+import { parse } from "csv-parse";
 interface UserQueryParams {
   name?: string;
   email?: string;
@@ -219,5 +221,59 @@ export const deleteClient = async (req: Request, res: Response) => {
     return res.status(200).json({ message: "Client Deleted" });
   } catch (error) {
     return res.status(500).json({ message: "Something wrong happened" });
+  }
+};
+
+export const importFile = async (req: Request, res: Response) => {
+  try {
+    const form = formidable({ multiples: false });
+
+    const [fields, files] = await new Promise<
+      [formidable.Fields, formidable.Files]
+    >((resolve, reject) => {
+      form.parse(req as any, (err, fields, files) => {
+        if (err) {
+          reject(err);
+        }
+        resolve([fields, files]);
+      });
+    });
+    if (!files.length) {
+      res.status(400).json({ message: "No file provided" });
+    }
+    const file = Array.isArray(files.file) ? files.file[0] : files.file;
+    if (!file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const fileContent = await fs.readFile(file.filepath);
+
+    const records: any[] = await new Promise((resolve, reject) => {
+      const results: any[] = [];
+      parse(fileContent, {
+        columns: true,
+        skip_empty_lines: true,
+        trim: true,
+      })
+        .on("data", (row: any) => results.push(row))
+        .on("end", () => resolve(results))
+        .on("error", (error) => reject(error));
+    });
+
+    records.forEach((row, rowIndex) => {
+      console.log(`Row ${rowIndex}:`);
+      row.forEach((value: any, columnIndex: any) => {});
+    });
+
+    await fs.unlink(file.filepath);
+    return res.status(201).json({
+      message: "File processed successfully",
+      // count: savedRecords.count,
+    });
+  } catch (error) {
+    console.error("Error processing CSV:", error);
+    return res.status(500).json({
+      message: "Failed processing the file",
+    });
   }
 };

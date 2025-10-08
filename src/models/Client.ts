@@ -8,6 +8,7 @@ import {
   HasMany,
   Model,
   Table,
+  Unique,
   UpdatedAt,
 } from "sequelize-typescript";
 
@@ -55,6 +56,7 @@ export default class Client extends Model<
   declare birth_date?: Date;
   @Column
   declare phone?: string;
+  @Unique
   @Column
   declare email?: string;
   @Column

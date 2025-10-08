@@ -52,6 +52,7 @@ export const up: Migration = async ({ context: sequelize }) => {
     email: {
       type: DataTypes.STRING,
       allowNull: true,
+      unique: true,
     },
     admin_note: {
       type: DataTypes.TEXT,
