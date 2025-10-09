@@ -8,7 +8,8 @@ import Client_Sub from "../models/Client_Sub";
 import { InferAttributes, Op, WhereOptions } from "sequelize";
 import formidable from "formidable";
 import fs from "fs/promises";
-import { parse } from "csv-parse";
+import { parse } from "csv-parse/sync";
+import dateConverter from "../utils/date";
 interface UserQueryParams {
   name?: string;
   email?: string;
@@ -238,38 +239,111 @@ export const importFile = async (req: Request, res: Response) => {
         resolve([fields, files]);
       });
     });
-    if (!files.length) {
-      res.status(400).json({ message: "No file provided" });
+
+    if (!files.file) {
+      return res.status(400).json({ message: "No file provided" });
     }
+
     const file = Array.isArray(files.file) ? files.file[0] : files.file;
     if (!file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const fileContent = await fs.readFile(file.filepath);
+    const fileContent = await fs.readFile(file.filepath, "latin1");
 
-    const records: any[] = await new Promise((resolve, reject) => {
-      const results: any[] = [];
-      parse(fileContent, {
-        columns: true,
-        skip_empty_lines: true,
-        trim: true,
-      })
-        .on("data", (row: any) => results.push(row))
-        .on("end", () => resolve(results))
-        .on("error", (error) => reject(error));
+    const records = parse(fileContent.toString(), {
+      columns: true, // Automatically parse headers as column names
+      skip_empty_lines: true,
+      trim: true,
+      delimiter: ";",
     });
 
-    records.forEach((row, rowIndex) => {
-      console.log(`Row ${rowIndex}:`);
-      row.forEach((value: any, columnIndex: any) => {});
-    });
+    const results: any[] = [];
+    let count = 0;
 
-    await fs.unlink(file.filepath);
-    return res.status(201).json({
-      message: "File processed successfully",
-      // count: savedRecords.count,
-    });
+    for (const row of records as any) {
+      count++;
+      try {
+        // Find or create client
+        let client = await Client.findOne({
+          where: {
+            first_name: row["Vorname"],
+            family_name: row["Nachname"],
+            email: row["E-Mail"],
+          },
+        });
+
+        let user = await User.findOne({ where: { name: row["VP-Name"] } });
+        if (!user) user = await User.findByPk(1);
+
+        if (!client && user) {
+          client = await Client.create({
+            first_name: row["Vorname"],
+            family_name: row["Nachname"],
+            title: row["Anrede"],
+            street: row["Straße"],
+            house_num: row["Hausnummer"],
+            zip_code: row["PLZ"],
+            city: row["Ort"],
+            birth_date: dateConverter(row["Geburtsdatum"]),
+            phone: row["Telefonnummer"],
+            email: row["E-Mail"],
+            user_id: user.id,
+          });
+        }
+
+        // Find or create subscription
+        let sub = await Subscription.findOne({
+          where: { sub_name: row["Tarif/Produkt"] },
+        });
+        if (!sub) {
+          sub = await Subscription.create({
+            sub_name: row["Tarif/Produkt"],
+            sub_id: 2,
+            company: "test",
+          });
+        }
+
+        if (user && client) {
+          const clientSub = await Client_Sub.create({
+            user_id: user.id,
+            client_id: client?.id,
+            sub_id: sub.id,
+            order_num: row["Auftr.-Nr."],
+            your_order_num: row["Ihre Auftr.-Nr."],
+            createdAt: row["Anlagedatum"],
+            sign_date: dateConverter(row["Unterschriftsdatum"]),
+            status: row["Auftr.-Status"],
+            counter_number: row["Zählernummer"],
+            consumption: Number(row["Verbrauch"]),
+            night_consumption: Number(row["Verbrauch NT"]),
+            paid: Boolean(row["VAP"]),
+            paid_date: dateConverter(row["VAP-Datum"]),
+            rl: Boolean(row["RL"]),
+            rl_date: dateConverter(row["RL-Datum"]),
+            termination_date: dateConverter(row["Stornodatum"]),
+            restablish_date: dateConverter(row["Wiederanschaltungsdatum"]),
+            start_importing: dateConverter(row["Lieferbeginn"]),
+            contract_end: dateConverter(row["Vertragsende"]),
+          });
+          results.push(clientSub);
+        }
+      } catch (err: any) {
+        console.error(`Failed to process row ${count}:`, err);
+        results.push({ row, error: err.message });
+        continue; // Continue to next row
+      }
+    }
+
+    // Send response after all rows are processed
+    return res
+      .status(200)
+      .json({
+        success: true,
+        processed: count,
+        results,
+        message: "Data proccessed successfully",
+      });
   } catch (error) {
     console.error("Error processing CSV:", error);
     return res.status(500).json({

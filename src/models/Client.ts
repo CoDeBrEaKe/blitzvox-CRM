@@ -62,7 +62,7 @@ export default class Client extends Model<
   @Column
   declare admin_note?: string;
   @Column
-  declare document_link: string;
+  declare document_link?: string;
 
   @ForeignKey(() => User)
   @Column({
@@ -76,7 +76,7 @@ export default class Client extends Model<
   declare updated_at: CreationOptional<Date>;
 
   @BelongsToMany(() => Subscription, () => Client_Sub)
-  declare subscriptions: InferAttributes<Subscription>[];
+  declare subscriptions?: InferAttributes<Subscription>[];
   @BelongsTo(() => User)
   declare assigned_to?: InferAttributes<User>;
   @HasMany(() => Feedback)

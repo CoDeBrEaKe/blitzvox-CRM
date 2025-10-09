@@ -55,15 +55,15 @@ export default class Subscription extends Model<
   declare company?: string;
 
   @BelongsToMany(() => Client, () => Client_Sub)
-  declare clients: InferAttributes<Client>[];
+  declare clients?: InferAttributes<Client>[];
 
   @BelongsTo(() => Subscription_Type)
   declare type?: InferAttributes<Subscription_Type>;
 
   @CreatedAt
-  declare created_at: CreationOptional<Date>;
+  declare created_at?: CreationOptional<Date>;
   @UpdatedAt
-  declare updated_at: CreationOptional<Date>;
+  declare updated_at?: CreationOptional<Date>;
   toJSON() {
     return {
       ...this.get(),
