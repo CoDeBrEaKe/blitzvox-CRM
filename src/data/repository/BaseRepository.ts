@@ -5,7 +5,12 @@ export default class BaseRepository {
   sequelizeClient!: Sequelize;
 
   constructor() {
-    if (config.db.database && config.db.username && config.db.port) {
+    if (
+      config.db.database &&
+      config.db.username &&
+      config.db.port &&
+      config.db.dialect
+    ) {
       this.sequelizeClient = new Sequelize(
         config.db.database,
         config.db.username,
@@ -13,7 +18,7 @@ export default class BaseRepository {
         {
           host: config.db.host,
           port: Number(config.db.port),
-          dialect: "postgres",
+          dialect: config.db.dialect,
           models: [__dirname + "/../../models"], // Adjust the path as necessary
         }
       );
