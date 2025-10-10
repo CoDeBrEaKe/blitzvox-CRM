@@ -1,6 +1,9 @@
 [phases.setup]
-nixPkgs = ['nodejs_20', 'npm']  # Use specific Node.js version
+nixPkgs = ['nodejs_20', 'npm']  # Install Node.js 20 and npm
 providers = ['node']  # Force Node.js provider
 
+[phases.install]
+cmds = ['npm install']  # Install project dependencies
+
 [phases.build]
-cmds = ['npm install', 'npm install -g typescript', 'npm run build']
+cmds = ['npm install -g typescript', 'npm run build']  # Install TypeScript and build
