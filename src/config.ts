@@ -10,7 +10,7 @@ const config = {
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
-    dialect: "postgres",
+    dialect: process.env.DIALICT,
     models: [__dirname + "/models"],
   },
 };

@@ -3,9 +3,11 @@ import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import cors from "cors";
 import { createRoutes } from "./routes";
+import config from "./config";
 
 export const createServer = () => {
   const app = express();
+  console.log(config.db.host);
   app
     .disable("x-powered-by")
     .use(morgan("dev"))
@@ -14,7 +16,7 @@ export const createServer = () => {
     .use(cookieParser())
     .use(
       cors({
-        origin: ["http://127.0.0.1:8002", "http://localhost:8002"], // Frontend URL
+        origin: ["http://" + config.db.host + ":8002" || ""], // Frontend URL
         credentials: true,
       })
     );
