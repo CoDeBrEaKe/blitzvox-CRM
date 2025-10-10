@@ -5,6 +5,7 @@ import Subscription from "../models/Subscription";
 import Subscription_Type from "../models/Subscription_Type";
 import User from "../models/User";
 import { InferAttributes, Op, WhereOptions } from "sequelize";
+import { formatDate } from "../utils/date";
 
 interface UserQueryParams {
   "client.name"?: string;
@@ -247,7 +248,11 @@ export const getClientSubscribtions = async (
   }
   res.status(200).json({
     message: "Subscriptions Fetched successfully",
-    clientSubs,
+    clientSubs: clientSubs.map((sub) => ({
+      ...sub,
+      sign_date: formatDate(sub?.sign_date),
+    })),
+
     pagination: {
       currentPage: pageNum,
       totalPages: Math.ceil(clientSubsCount / limitNum),

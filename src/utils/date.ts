@@ -10,3 +10,8 @@ const csvDate = "20.5.2025";
 
 // Create a Date object
 // Note: month in JS Date is 0-indexed (0 = January, 4 = May)
+export const formatDate = (date: Date | undefined) => {
+  if (!date) return null;
+  const d = new Date(date);
+  return d.toISOString().split("T")[0];
+};

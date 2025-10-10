@@ -255,7 +255,7 @@ export const importFile = async (req: Request, res: Response) => {
       columns: true, // Automatically parse headers as column names
       skip_empty_lines: true,
       trim: true,
-      delimiter: ";",
+      delimiter: ",",
     });
 
     const results: any[] = [];
@@ -336,14 +336,12 @@ export const importFile = async (req: Request, res: Response) => {
     }
 
     // Send response after all rows are processed
-    return res
-      .status(200)
-      .json({
-        success: true,
-        processed: count,
-        results,
-        message: "Data proccessed successfully",
-      });
+    return res.status(200).json({
+      success: true,
+      processed: count,
+      results,
+      message: "Data proccessed successfully",
+    });
   } catch (error) {
     console.error("Error processing CSV:", error);
     return res.status(500).json({
