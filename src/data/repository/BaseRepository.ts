@@ -18,7 +18,7 @@ export default class BaseRepository {
         {
           host: config.db.host,
           port: Number(config.db.port),
-          dialect: config.db.dialect,
+          dialect: config.db.dialect as any, // Ensure config.db.dialect is of type Dialect
           models: [__dirname + "/../../models"], // Adjust the path as necessary
         }
       );
