@@ -20,11 +20,12 @@ export const createServer = () => {
     .use(
       cors({
         origin: allowedOrigins,
-        // credentials: true,
+        credentials: true, // ✅ this is critical for cookies
       })
     );
 
   createRoutes(app);
+
   app.get("/", (req: Request, res: Response) => {
     res.status(200).json({ message: "Welcome to the API" });
   });
