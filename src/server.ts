@@ -15,7 +15,7 @@ export const createServer = () => {
     .use(cookieParser())
     .use(
       cors({
-        origin: ["https://blitzvox.netlify.app"], // Only allow your frontend
+        origin: "https://blitzvox.netlify.app", // Only allow your frontend
         allowedHeaders: ["Content-Type", "Authorization"], // Allow common headers
         credentials: true, // Allow cookies/credentials
       })
