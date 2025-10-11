@@ -7,24 +7,31 @@ import config from "./config";
 
 export const createServer = () => {
   const app = express();
+  const allowedOrigins = ["https://blitzvox.netlify.app"];
+  if (process.env.NODE_ENV !== "production" && config.db.host) {
+    allowedOrigins.push(`http://${config.db.host}:8002`);
+  }
+
+  console.log("CORS Allowed Origins:", allowedOrigins);
+
   app
     .disable("x-powered-by")
     .use(morgan("dev"))
-    .use(express.urlencoded())
+    .use(express.urlencoded({ extended: true }))
     .use(express.json())
     .use(cookieParser())
     .use(
       cors({
-        origin: "https://blitzvox.netlify.app", // Only allow your frontend
-        allowedHeaders: ["Content-Type", "Authorization"], // Allow common headers
-        credentials: true, // Allow cookies/credentials
+        origin: allowedOrigins,
+        methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: true,
       })
     );
+
   createRoutes(app);
   app.get("/", (req: Request, res: Response) => {
-    res.status(200).json({
-      message: "Welcome to the API",
-    });
+    res.status(200).json({ message: "Welcome to the API" });
   });
 
   return app;
