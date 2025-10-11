@@ -7,10 +7,7 @@ import config from "./config";
 
 export const createServer = () => {
   const app = express();
-  const allowedOrigins = ["https://blitzvox.netlify.app"];
-  if (process.env.NODE_ENV !== "production" && config.db.host) {
-    allowedOrigins.push(`http://${config.db.host}:8002`);
-  }
+  const allowedOrigins = "https://blitzvox.netlify.app";
 
   console.log("CORS Allowed Origins:", allowedOrigins);
 
@@ -23,8 +20,6 @@ export const createServer = () => {
     .use(
       cors({
         origin: allowedOrigins,
-        methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
-        allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
       })
     );
