@@ -9,8 +9,6 @@ export const createServer = () => {
   const app = express();
   const allowedOrigins = "https://blitzvox.netlify.app";
 
-  console.log("CORS Allowed Origins:", allowedOrigins);
-
   app
     .disable("x-powered-by")
     .use(morgan("dev"))
@@ -27,6 +25,8 @@ export const createServer = () => {
   createRoutes(app);
 
   app.get("/", (req: Request, res: Response) => {
+    console.log("CORS Allowed Origins:", allowedOrigins);
+
     res.status(200).json({ message: "Welcome to the API" });
   });
 
