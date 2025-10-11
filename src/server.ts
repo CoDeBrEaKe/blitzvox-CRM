@@ -8,25 +8,20 @@ import config from "./config";
 export const createServer = () => {
   const app = express();
   const allowedOrigins = "https://blitzvox.netlify.app";
-
-  app
-    .disable("x-powered-by")
-    .use(morgan("dev"))
-    .use(express.urlencoded({ extended: true }))
-    .use(express.json())
-    .use(cookieParser())
-    .use(
-      cors({
-        origin: [allowedOrigins],
-        credentials: true, // ✅ this is critical for cookies
-      })
-    );
+  console.log(allowedOrigins);
+  app.disable("x-powered-by").use(morgan("dev"));
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser()).use(
+    cors({
+      origin: allowedOrigins,
+      credentials: true, // ✅ this is critical for cookies
+    })
+  );
 
   createRoutes(app);
 
   app.get("/", (req: Request, res: Response) => {
-    console.log("CORS Allowed Origins:", allowedOrigins);
-
     res.status(200).json({ message: "Welcome to the API" });
   });
 
