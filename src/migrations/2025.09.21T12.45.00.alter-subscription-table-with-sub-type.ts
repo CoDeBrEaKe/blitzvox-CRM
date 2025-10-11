@@ -5,14 +5,17 @@ export const up: Migration = async ({ context: sequelize }) => {
   const queryInterface = sequelize.getQueryInterface();
 
   await queryInterface.sequelize.transaction(async (t) => {
-    // Step 1: Ensure subscription_types has entries for existing enum values
+    // Step 1: Populate subscription_types with enum values that don't already exist
     await queryInterface.sequelize.query(
       `
+      WITH enum_values AS (
+        SELECT unnest(enum_range(NULL::enum_subscriptions_sub_type)) AS sub_type
+      )
       INSERT INTO subscription_types (sub_type, created_at, updated_at)
-      SELECT unnest(enum_range(NULL::enum_subscriptions_sub_type)) AS sub_type,
-             CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+      SELECT sub_type, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+      FROM enum_values
       WHERE NOT EXISTS (
-        SELECT 1 FROM subscription_types WHERE sub_type = unnest(enum_range(NULL::enum_subscriptions_sub_type))
+        SELECT 1 FROM subscription_types st WHERE st.sub_type = enum_values.sub_type
       );
       `,
       { transaction: t }
@@ -91,12 +94,5 @@ export const down: Migration = async ({ context: sequelize }) => {
       `,
       { transaction: t }
     );
-
-    // Step 4: Optionally clean up subscription_types (if needed)
-    // Note: Be cautious, as other tables might reference subscription_types
-    // await queryInterface.sequelize.query(
-    //   `TRUNCATE TABLE subscription_types;`,
-    //   { transaction: t }
-    // );
   });
 };
