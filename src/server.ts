@@ -20,7 +20,7 @@ export const createServer = () => {
     .use(
       cors({
         origin: allowedOrigins,
-        credentials: true,
+        // credentials: true,
       })
     );
 
