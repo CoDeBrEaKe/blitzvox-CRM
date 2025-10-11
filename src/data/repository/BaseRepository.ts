@@ -1,5 +1,6 @@
 import { Sequelize } from "sequelize-typescript";
 import config from "../../config";
+console.log(config.db);
 
 export default class BaseRepository {
   sequelizeClient!: Sequelize;
