@@ -14,9 +14,15 @@ export const up: Migration = async ({ context: sequelize }) => {
       type: DataTypes.BIGINT,
       allowNull: false,
     },
-    sub_type: {
-      type: DataTypes.ENUM(...Object.values(SUB)),
+    sub_id: {
+      type: DataTypes.BIGINT,
       allowNull: false,
+      references: {
+        model: "subscription_types",
+        key: "id",
+      },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
     },
     sub_name: {
       type: DataTypes.STRING,
