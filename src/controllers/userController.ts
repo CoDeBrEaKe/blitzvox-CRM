@@ -100,8 +100,8 @@ export const loginUser = async (req: Request, res: Response) => {
   res.cookie("token", generateToken({ ...user }), {
     maxAge: 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true,
-    secure: true, // set to true in production
-    sameSite: process.env.NODE_ENV == "production" ? "none" : "strict", // Use 'none' in production
+    secure: true,
+    sameSite: "none", // Use 'none' in production
   });
   res.status(200).json({ message: "Login Successful", user });
 };
