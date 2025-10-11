@@ -10,12 +10,12 @@ export const up: Migration = async ({ context: sequelize }) => {
       allowNull: false,
     },
     subject: {
-      type: DataTypes.TEXT,
+      type: DataTypes.TEXT("long"),
       allowNull: false,
       defaultValue: "",
     },
     content: {
-      type: DataTypes.TEXT,
+      type: DataTypes.TEXT("long"),
       allowNull: false,
       defaultValue: "",
     },

@@ -6,7 +6,9 @@ import Subscription_Type from "../models/Subscription_Type";
 import User from "../models/User";
 import { InferAttributes, Op, WhereOptions } from "sequelize";
 import { formatDate } from "../utils/date";
-
+import path from "path";
+// Store file in memory for S3 upload
+import { uploadDocument, listDocuments } from "../utils/s3";
 interface UserQueryParams {
   "client.name"?: string;
   your_order_num?: string;
@@ -17,6 +19,10 @@ interface UserQueryParams {
   page?: string;
   limit?: string;
 }
+const baseUrl =
+  process.env.NODE_ENV == "production"
+    ? "https://med-health.site"
+    : "http://127.0.0.1:3000";
 
 export const getClientSubscribtions = async (
   req: Request<{}, {}, {}, UserQueryParams>,
@@ -289,10 +295,15 @@ export const getSingleClientSubscribtion = async (
 export const createClientSub = async (req: Request, res: Response) => {
   const data = req.body;
 
-  const clientSub = await Client_Sub.create(data);
-  res
-    .status(201)
-    .json({ message: "Subscribtion created successfully", clientSub });
+  const clientSub = await Client_Sub.create({
+    ...data,
+    documents_link: `${baseUrl}/api/documents/${data.client_id}/${data.sub_id}`,
+  });
+
+  res.status(201).json({
+    message: "Subscribtion created successfully",
+    clientSub,
+  });
 };
 
 export const updateClientSub = async (req: Request, res: Response) => {
@@ -303,7 +314,10 @@ export const updateClientSub = async (req: Request, res: Response) => {
     if (!clientSub) {
       return res.status(404).json({ message: "Something went Wrong" });
     }
-    clientSub = await clientSub.update(data);
+    clientSub = await clientSub.update({
+      ...data,
+      documents_link: `${baseUrl}/api/documents/${data.client_id}/${data.sub_id}`,
+    });
     res
       .status(201)
       .json({ message: "Subscribtion updated successfully", clientSub });
@@ -325,5 +339,31 @@ export const deleteClientSub = async (req: Request, res: Response) => {
       .json({ message: "Client subscription deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Something went Wrong" });
+  }
+};
+
+export const uploadFile = async (req: Request, res: Response) => {
+  try {
+    const { firstName, lastName, clientId, subscriptionId } = req.body;
+    const file = req.file;
+
+    if (!file || !firstName || !lastName || !clientId || !subscriptionId) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const key = await uploadDocument(
+      firstName,
+      lastName,
+      clientId,
+      subscriptionId,
+      file.originalname,
+      file.buffer,
+      file.mimetype
+    );
+
+    res.json({ success: true, key });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Upload failed" });
   }
 };

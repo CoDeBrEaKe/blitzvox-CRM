@@ -104,9 +104,9 @@ export default class Client_Sub extends Model<
   declare user_id: number;
 
   @CreatedAt
-  declare created_at: CreationOptional<Date>;
+  declare created_at?: CreationOptional<Date>;
   @UpdatedAt
-  declare updated_at: CreationOptional<Date>;
+  declare updated_at?: CreationOptional<Date>;
 
   @ForeignKey(() => Subscription)
   @Column({

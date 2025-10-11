@@ -1,6 +1,8 @@
 import { Request, Express, Response } from "express";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import * as clientSubController from "../controllers/clientSubscriptionsController";
+import multer from "multer";
+const upload = multer({ storage: multer.memoryStorage() });
 export const createClientSubRoutes = async (app: Express) => {
   app.get(
     "/client-subscription",
@@ -26,5 +28,11 @@ export const createClientSubRoutes = async (app: Express) => {
     "/client-subscription/:id",
     authMiddleware,
     clientSubController.deleteClientSub
+  );
+  app.post(
+    "/api/documents/upload",
+    authMiddleware,
+    upload.single("file"),
+    clientSubController.uploadFile
   );
 };

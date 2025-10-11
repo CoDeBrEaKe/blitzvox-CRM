@@ -139,7 +139,17 @@ export const up: Migration = async ({ context: sequelize }) => {
       defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     },
   });
+
+  await sequelize.getQueryInterface().addConstraint("client_sub", {
+    fields: ["client_id", "sub_id"],
+    type: "unique",
+    name: "unique_client_sub",
+  });
 };
+
 export const down: Migration = async ({ context: sequelize }) => {
+  await sequelize
+    .getQueryInterface()
+    .removeConstraint("client_sub", "unique_client_sub");
   await sequelize.getQueryInterface().dropTable("client_sub");
 };

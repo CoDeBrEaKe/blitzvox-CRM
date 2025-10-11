@@ -311,7 +311,7 @@ export const importFile = async (req: Request, res: Response) => {
             sub_id: sub.id,
             order_num: row["Auftr.-Nr."],
             your_order_num: row["Ihre Auftr.-Nr."],
-            createdAt: dateConverter(row["Anlagedatum"]),
+            created_at: dateConverter(row["Anlagedatum"]),
             sign_date: dateConverter(row["Unterschriftsdatum"]),
             status: row["Auftr.-Status"],
             counter_number: row["Zählernummer"],
