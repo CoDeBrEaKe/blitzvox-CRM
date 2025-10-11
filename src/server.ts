@@ -16,7 +16,6 @@ export const createServer = () => {
     .use(
       cors({
         origin: ["https://blitzvox.netlify.app"], // Only allow your frontend
-        methods: ["GET", "POST", "OPTIONS"], // Explicitly allow methods
         allowedHeaders: ["Content-Type", "Authorization"], // Allow common headers
         credentials: true, // Allow cookies/credentials
       })
