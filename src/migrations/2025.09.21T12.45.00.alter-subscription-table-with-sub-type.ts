@@ -4,65 +4,99 @@ import type { Migration } from "../umzug";
 export const up: Migration = async ({ context: sequelize }) => {
   const queryInterface = sequelize.getQueryInterface();
 
-  // 1. If the column is enum, drop default/constraint first
-  await queryInterface.sequelize.query(`
-    ALTER TABLE subscriptions
-    ALTER COLUMN sub_type DROP DEFAULT;
-  `);
+  await queryInterface.sequelize.transaction(async (t) => {
+    // Step 1: Ensure subscription_types has entries for existing enum values
+    await queryInterface.sequelize.query(
+      `
+      INSERT INTO subscription_types (sub_type, created_at, updated_at)
+      SELECT unnest(enum_range(NULL::enum_subscriptions_sub_type)) AS sub_type,
+             CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+      WHERE NOT EXISTS (
+        SELECT 1 FROM subscription_types WHERE sub_type = unnest(enum_range(NULL::enum_subscriptions_sub_type))
+      );
+      `,
+      { transaction: t }
+    );
 
-  // 2. Rename column
-  await queryInterface.sequelize.query(`
-    ALTER TABLE subscriptions
-    RENAME COLUMN sub_type TO sub_id;
-  `);
+    // Step 2: Drop default value for sub_id (if any)
+    await queryInterface.sequelize.query(
+      `
+      ALTER TABLE subscriptions
+      ALTER COLUMN sub_id DROP DEFAULT;
+      `,
+      { transaction: t }
+    );
 
-  // 3. Drop the enum type (optional, if not used elsewhere)
-  await queryInterface.sequelize.query(`
-    DROP TYPE IF EXISTS enum_subscriptions_sub_type;
-  `);
+    // Step 3: Change sub_id column type to BIGINT with data mapping
+    await queryInterface.sequelize.query(
+      `
+      ALTER TABLE subscriptions
+      ALTER COLUMN sub_id TYPE BIGINT USING (
+        SELECT id FROM subscription_types WHERE sub_type = subscriptions.sub_id::text
+      );
+      `,
+      { transaction: t }
+    );
 
-  // 4. Change column type to BIGINT
-  await queryInterface.sequelize.query(`
-    ALTER TABLE subscriptions
-    ALTER COLUMN sub_id TYPE BIGINT USING sub_id::text::BIGINT;
-  `);
+    // Step 4: Add foreign key constraint
+    await queryInterface.sequelize.query(
+      `
+      ALTER TABLE subscriptions
+      ADD CONSTRAINT fk_subscriptions_sub_id
+      FOREIGN KEY (sub_id) REFERENCES subscription_types(id) ON DELETE RESTRICT ON UPDATE CASCADE;
+      `,
+      { transaction: t }
+    );
 
-  // 5. Add foreign key
-  await queryInterface.sequelize.query(`
-    ALTER TABLE subscriptions
-    ADD CONSTRAINT fk_subscriptions_sub_id
-    FOREIGN KEY (sub_id) REFERENCES subscription_types(id);
-  `);
+    // Step 5: Drop the enum type
+    await queryInterface.sequelize.query(
+      `
+      DROP TYPE IF EXISTS enum_subscriptions_sub_type;
+      `,
+      { transaction: t }
+    );
+  });
 };
 
 export const down: Migration = async ({ context: sequelize }) => {
   const queryInterface = sequelize.getQueryInterface();
 
-  // 1. Drop foreign key
-  await queryInterface.sequelize.query(`
-    ALTER TABLE subscriptions
-    DROP CONSTRAINT IF EXISTS fk_subscriptions_sub_id;
-  `);
+  await queryInterface.sequelize.transaction(async (t) => {
+    // Step 1: Recreate the enum type
+    await queryInterface.sequelize.query(
+      `
+      CREATE TYPE enum_subscriptions_sub_type AS ENUM ('electricity', 'gas', 'internet', 'health insurance');
+      `,
+      { transaction: t }
+    );
 
-  // 2. Change back to TEXT
-  await queryInterface.changeColumn("subscriptions", "sub_id", {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  });
+    // Step 2: Drop the foreign key constraint
+    await queryInterface.sequelize.query(
+      `
+      ALTER TABLE subscriptions
+      DROP CONSTRAINT IF EXISTS fk_subscriptions_sub_id;
+      `,
+      { transaction: t }
+    );
 
-  // 3. Rename column back
-  await queryInterface.sequelize.query(`
-    ALTER TABLE subscriptions
-    RENAME COLUMN sub_id TO sub_type;
-  `);
+    // Step 3: Change sub_id back to the enum type with reverse mapping
+    await queryInterface.sequelize.query(
+      `
+      ALTER TABLE subscriptions
+      ALTER COLUMN sub_id TYPE enum_subscriptions_sub_type USING (
+        SELECT sub_type::enum_subscriptions_sub_type
+        FROM subscription_types
+        WHERE subscription_types.id = subscriptions.sub_id
+      );
+      `,
+      { transaction: t }
+    );
 
-  // 4. Recreate enum if needed (only if other code depends on it)
-  await queryInterface.sequelize.query(`
-    CREATE TYPE IF NOT EXISTS enum_subscriptions_sub_type AS ENUM ('your', 'enum', 'values');
-  `);
-
-  await queryInterface.changeColumn("subscriptions", "sub_type", {
-    type: "enum_subscriptions_sub_type",
-    allowNull: true,
+    // Step 4: Optionally clean up subscription_types (if needed)
+    // Note: Be cautious, as other tables might reference subscription_types
+    // await queryInterface.sequelize.query(
+    //   `TRUNCATE TABLE subscription_types;`,
+    //   { transaction: t }
+    // );
   });
 };
