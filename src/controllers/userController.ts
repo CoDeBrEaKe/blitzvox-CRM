@@ -96,6 +96,7 @@ export const loginUser = async (req: Request, res: Response) => {
   if (!check) {
     return res.status(401).json({ messsage: "Invalid Username" });
   }
+  console.log(process.env.NODE_ENV);
   res.cookie("token", generateToken({ ...user }), {
     maxAge: 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true,
