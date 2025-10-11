@@ -85,6 +85,7 @@ export default class Client_Sub extends Model<
   declare persons_num?: number;
   @Column
   declare persons_name?: string;
+  @Default("")
   @Column
   declare documents_link?: string;
 

@@ -14,7 +14,7 @@ export const createServer = () => {
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser()).use(
     cors({
-      origin: allowedOrigins,
+      origin: [allowedOrigins, "http://127.0.0.1:8002"],
       credentials: true, // ✅ this is critical for cookies
     })
   );

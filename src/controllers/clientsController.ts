@@ -317,20 +317,21 @@ export const importFile = async (req: Request, res: Response) => {
             counter_number: row["Zählernummer"],
             consumption: Number(row["Verbrauch"]),
             night_consumption: Number(row["Verbrauch NT"]),
-            paid: Boolean(row["VAP"]),
+            paid: row["VAP"] == "Nein" ? false : true,
             paid_date: dateConverter(row["VAP-Datum"]),
-            rl: Boolean(row["RL"]),
+            rl: row["RL"] == "Nein" ? false : true,
             rl_date: dateConverter(row["RL-Datum"]),
             termination_date: dateConverter(row["Stornodatum"]),
             restablish_date: dateConverter(row["Wiederanschaltungsdatum"]),
             start_importing: dateConverter(row["Lieferbeginn"]),
             contract_end: dateConverter(row["Vertragsende"]),
+            documents_link: "",
           });
           results.push(clientSub);
         }
       } catch (err: any) {
         console.error(`Failed to process row ${count}:`, err);
-        results.push({ row, error: err.message });
+        results.push({ error: err.message });
         continue; // Continue to next row
       }
     }
