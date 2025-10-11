@@ -15,11 +15,10 @@ export const createServer = () => {
     .use(cookieParser())
     .use(
       cors({
-        origin: [
-          "http://" + config.db.host + ":8002" || "",
-          "https://blitzvox.netlify.app",
-        ], // Frontend URL
-        credentials: true,
+        origin: ["https://blitzvox.netlify.app"], // Only allow your frontend
+        methods: ["GET", "POST", "OPTIONS"], // Explicitly allow methods
+        allowedHeaders: ["Content-Type", "Authorization"], // Allow common headers
+        credentials: true, // Allow cookies/credentials
       })
     );
   createRoutes(app);
