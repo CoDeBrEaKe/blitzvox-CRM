@@ -15,7 +15,10 @@ export const createServer = () => {
     .use(cookieParser())
     .use(
       cors({
-        origin: ["http://" + config.db.host + ":8002" || ""], // Frontend URL
+        origin: [
+          "http://" + config.db.host + ":8002" || "",
+          "https://blitzvox.netlify.app",
+        ], // Frontend URL
         credentials: true,
       })
     );
