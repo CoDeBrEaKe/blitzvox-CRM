@@ -311,7 +311,7 @@ export const importFile = async (req: Request, res: Response) => {
             sub_id: sub.id,
             order_num: row["Auftr.-Nr."],
             your_order_num: row["Ihre Auftr.-Nr."],
-            createdAt: row["Anlagedatum"],
+            createdAt: dateConverter(row["Anlagedatum"]),
             sign_date: dateConverter(row["Unterschriftsdatum"]),
             status: row["Auftr.-Status"],
             counter_number: row["Zählernummer"],
@@ -330,8 +330,7 @@ export const importFile = async (req: Request, res: Response) => {
           results.push(clientSub);
         }
       } catch (err: any) {
-        console.error(`Failed to process row ${count}:`, err);
-        results.push({ error: err.message });
+        results.push({ error: err.message, row });
         continue; // Continue to next row
       }
     }

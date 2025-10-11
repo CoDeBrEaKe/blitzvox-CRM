@@ -1,10 +1,13 @@
-export default function dateConverter(date: string): Date {
-  const [day, month, year] = csvDate.split(".").map(Number);
-  const jsDate = new Date(year, month - 1, day);
-  return jsDate;
+export default function dateConverter(date: string): Date | undefined {
+  if (date != "") {
+    const [day, month, year] = date.split(".").map(Number);
+    const jsDate = new Date(year, month - 1, day);
+    console.log(jsDate);
+    return jsDate;
+  }
+  console.log("ss");
+  return undefined;
 }
-
-const csvDate = "20.5.2025";
 
 // Split the string by '.'
 
