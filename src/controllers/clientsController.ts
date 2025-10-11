@@ -325,7 +325,6 @@ export const importFile = async (req: Request, res: Response) => {
             restablish_date: dateConverter(row["Wiederanschaltungsdatum"]),
             start_importing: dateConverter(row["Lieferbeginn"]),
             contract_end: dateConverter(row["Vertragsende"]),
-            documents_link: "",
           });
           results.push(clientSub);
         }

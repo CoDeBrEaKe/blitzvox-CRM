@@ -48,7 +48,6 @@ async function seed() {
           phone: faker.phone.number(),
 
           user_id: faker.helpers.arrayElement(users).id,
-          document_link: "",
           subscriptions: [],
         })
       )
