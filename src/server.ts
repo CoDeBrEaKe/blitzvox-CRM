@@ -19,7 +19,7 @@ export const createServer = () => {
     .use(cookieParser())
     .use(
       cors({
-        origin: allowedOrigins,
+        origin: [allowedOrigins],
         credentials: true, // ✅ this is critical for cookies
       })
     );
