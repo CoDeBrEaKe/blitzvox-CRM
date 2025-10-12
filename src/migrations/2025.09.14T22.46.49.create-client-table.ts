@@ -43,10 +43,12 @@ export const up: Migration = async ({ context: sequelize }) => {
     consumption: {
       type: DataTypes.DECIMAL,
       allowNull: true,
+      defaultValue: 0,
     },
     night_consumption: {
       type: DataTypes.DECIMAL,
       allowNull: true,
+      defaultValue: 0,
     },
     paid: {
       type: DataTypes.BOOLEAN,
@@ -95,10 +97,12 @@ export const up: Migration = async ({ context: sequelize }) => {
     family_count: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      defaultValue: 0,
     },
     persons_num: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      defaultValue: 0,
     },
     persons_name: {
       type: DataTypes.TEXT,

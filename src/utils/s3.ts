@@ -16,7 +16,6 @@ const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME!; // e.g., 'my-app-documents'
 
 export async function uploadDocument(
   firstName: string,
-  lastName: string,
   clientId: string,
   subscriptionId: string,
   fileName: string,
@@ -24,7 +23,7 @@ export async function uploadDocument(
   contentType: string
 ) {
   const sanitizedClientName =
-    `${firstName.replace(/[^a-zA-Z0-9_-]/g, "_")}_${lastName.replace(/[^a-zA-Z0-9_-]/g, "_")}_${clientId}`.toLowerCase();
+    `${firstName.replace(/[^a-zA-Z0-9_-]/g, "_")}_${clientId}`.toLowerCase();
   const key = `${sanitizedClientName}/${subscriptionId}/${fileName}`;
 
   const command = new PutObjectCommand({
@@ -32,21 +31,18 @@ export async function uploadDocument(
     Key: key,
     Body: fileBuffer,
     ContentType: contentType,
-    ACL: "public-read", // Allows public access to individual objects
   });
-
   await s3Client.send(command);
   return key; // Return the object key for reference
 }
 
 export async function listDocuments(
   firstName: string,
-  lastName: string,
   clientId: string,
   subscriptionId: string
 ) {
   const sanitizedClientName =
-    `${firstName.replace(/[^a-zA-Z0-9_-]/g, "_")}_${lastName.replace(/[^a-zA-Z0-9_-]/g, "_")}_${clientId}`.toLowerCase();
+    `${firstName.replace(/[^a-zA-Z0-9_-]/g, "_")}_${clientId}`.toLowerCase();
   const prefix = `${sanitizedClientName}/${subscriptionId}/`;
 
   const command = new ListObjectsV2Command({

@@ -50,8 +50,10 @@ export default class Client_Sub extends Model<
   declare status?: string;
   @Column
   declare counter_number?: string;
+  @Default(0)
   @Column
   declare consumption?: number;
+  @Default(0)
   @Column
   declare night_consumption?: number;
   @Column
@@ -79,8 +81,10 @@ export default class Client_Sub extends Model<
     type: DataType.ENUM(...Object.values(TIME)),
   })
   declare contract_time?: TIME;
+  @Default(0)
   @Column
   declare family_count?: number;
+  @Default(0)
   @Column
   declare persons_num?: number;
   @Column

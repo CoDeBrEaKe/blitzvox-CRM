@@ -14,5 +14,5 @@ const config = {
     models: [__dirname + "/models"],
   },
 };
-
+console.log(config);
 export default config;

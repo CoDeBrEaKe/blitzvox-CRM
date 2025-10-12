@@ -9,7 +9,6 @@ import { listDocuments } from "./utils/s3";
 export const createServer = () => {
   const app = express();
   const allowedOrigins = "https://blitzvox.netlify.app";
-  console.log(allowedOrigins);
   app.disable("x-powered-by").use(morgan("dev"));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
@@ -26,29 +25,22 @@ export const createServer = () => {
     res.status(200).json({ message: "Welcome to the API" });
   });
   app.get(
-    "/api/documents/:clientId/:subscriptionId",
+    "/api/documents/:clientId/:subscriptionId/:firstName",
     async (req: Request, res: Response) => {
       try {
-        const { clientId, subscriptionId } = req.params;
-        const { firstName, lastName } = req.query as {
-          firstName: string;
-          lastName: string;
-        };
+        const { clientId, subscriptionId, firstName } = req.params;
 
         // Validate required parameters
-        if (!firstName || !lastName || !clientId || !subscriptionId) {
-          return res
-            .status(400)
-            .json({
-              error:
-                "Missing required fields: clientId, subscriptionId, firstName, or lastName",
-            });
+        if (!firstName || !clientId || !subscriptionId) {
+          return res.status(400).json({
+            error:
+              "Missing required fields: clientId, subscriptionId, firstName, or lastName",
+          });
         }
 
         // Fetch documents
         const documents = await listDocuments(
           firstName,
-          lastName,
           clientId,
           subscriptionId
         );
@@ -58,7 +50,7 @@ export const createServer = () => {
       <!DOCTYPE html>
       <html lang="en">
         <head>
-          <title>Documents for ${firstName} ${lastName}</title>
+          <title>Documents for ${firstName}</title>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
@@ -71,7 +63,7 @@ export const createServer = () => {
           </style>
         </head>
         <body>
-          <h1>Documents for ${firstName} ${lastName} (Subscription ${subscriptionId})</h1>
+          <h1>Documents for ${firstName} (Subscription ${subscriptionId})</h1>
           ${
             documents.length > 0
               ? `

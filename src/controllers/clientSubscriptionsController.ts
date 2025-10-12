@@ -295,9 +295,17 @@ export const getSingleClientSubscribtion = async (
 export const createClientSub = async (req: Request, res: Response) => {
   const data = req.body;
 
+  let prevSub = await Client_Sub.findOne({
+    where: { client_id: data.client_id, sub_id: data.sub_id },
+  });
+  if (prevSub) {
+    return res
+      .status(400)
+      .json({ message: "This client already has this subscription" });
+  }
+
   const clientSub = await Client_Sub.create({
     ...data,
-    documents_link: `${baseUrl}/api/documents/${data.client_id}/${data.sub_id}`,
   });
 
   res.status(201).json({
@@ -316,7 +324,6 @@ export const updateClientSub = async (req: Request, res: Response) => {
     }
     clientSub = await clientSub.update({
       ...data,
-      documents_link: `${baseUrl}/api/documents/${data.client_id}/${data.sub_id}`,
     });
     res
       .status(201)
@@ -344,16 +351,14 @@ export const deleteClientSub = async (req: Request, res: Response) => {
 
 export const uploadFile = async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName, clientId, subscriptionId } = req.body;
+    const { firstName, clientId, subscriptionId } = req.body;
     const file = req.file;
-
-    if (!file || !firstName || !lastName || !clientId || !subscriptionId) {
+    if (!file || !firstName || !clientId || !subscriptionId) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
     const key = await uploadDocument(
       firstName,
-      lastName,
       clientId,
       subscriptionId,
       file.originalname,
@@ -361,7 +366,7 @@ export const uploadFile = async (req: Request, res: Response) => {
       file.mimetype
     );
 
-    res.json({ success: true, key });
+    res.json({ success: true, key }).status(200);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Upload failed" });

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Subscription_Type from "../models/Subscription_Type";
 import { InferAttributes, WhereOptions } from "sequelize";
 import { Op } from "sequelize";
+import { uploadDocument } from "../utils/s3";
 
 interface UserQueryParams {
   sub_type?: string;
@@ -11,8 +12,28 @@ interface UserQueryParams {
 
 export const createSubTypes = async (req: Request, res: Response) => {
   const data = req.body;
-  try {
+  const file = req.file;
+  if (!file) {
+    console.log("ssss");
     const type = await Subscription_Type.create(data);
+    return res
+      .status(200)
+      .json({ message: "Subscription type created successfully", type });
+  }
+  const key = await uploadDocument(
+    "type", // Use a generic name or fetch the type name dynamically
+    data.sub_type, // Use typeId as clientId
+    "image", // Use a fixed subscriptionId or dynamic value
+    file.originalname,
+    file.buffer,
+    file.mimetype
+  );
+  const imageUrl = `https://blitzvox-bucket.s3.amazonaws.com/${key}`;
+  try {
+    const type = await Subscription_Type.create({
+      ...data,
+      sub_image: imageUrl,
+    });
     res
       .status(200)
       .json({ message: "Subscription type created successfully", type });
@@ -90,6 +111,19 @@ export const getSubTypeById = async (req: Request, res: Response) => {
 export const updateSubTypes = async (req: Request, res: Response) => {
   const data = req.body;
   const { id } = req.params;
+  const file = req.file;
+  let imageUrl;
+  if (file) {
+    const key = await uploadDocument(
+      "type", // Use a generic name or fetch the type name dynamically
+      data.sub_type, // Use typeId as clientId
+      "image", // Use a fixed subscriptionId or dynamic value
+      file.originalname,
+      file.buffer,
+      file.mimetype
+    );
+    imageUrl = `https://blitzvox-bucket.s3.amazonaws.com/${key}`;
+  }
   try {
     let type = await Subscription_Type.findByPk(id);
     if (!type) {
@@ -97,7 +131,10 @@ export const updateSubTypes = async (req: Request, res: Response) => {
         .status(404)
         .json({ message: "No Subscription type Found successfully" });
     }
-    type = await type.update(data);
+    type = await type.update({
+      ...data,
+      sub_image: imageUrl || type.sub_image,
+    });
     res
       .status(200)
       .json({ message: "Subscription type Updated successfully", type });
