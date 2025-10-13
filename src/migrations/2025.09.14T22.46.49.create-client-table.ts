@@ -8,6 +8,7 @@ export const up: Migration = async ({ context: sequelize }) => {
       autoIncrement: true,
       type: DataTypes.BIGINT,
       allowNull: false,
+      unique: true,
     },
     user_id: {
       type: DataTypes.BIGINT,
@@ -99,11 +100,7 @@ export const up: Migration = async ({ context: sequelize }) => {
       allowNull: true,
       defaultValue: 0,
     },
-    persons_num: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 0,
-    },
+
     persons_name: {
       type: DataTypes.TEXT,
       allowNull: true,

@@ -15,8 +15,7 @@ class EmailService extends MessageService {
     html: string,
     to: string[]
   ): Promise<void> {
-    to.forEach(async (receiver) => {
-      console.log(receiver);
+    for (const receiver of to) {
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: receiver,
@@ -26,12 +25,12 @@ class EmailService extends MessageService {
       };
 
       try {
-        await transporter.sendMail(mailOptions);
+        transporter.sendMail(mailOptions);
         console.log("✅ Email sent successfully");
       } catch (error) {
         console.error("❌ Error sending email:", error);
       }
-    });
+    }
   }
 }
 

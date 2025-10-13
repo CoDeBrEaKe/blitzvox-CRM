@@ -6,6 +6,7 @@ import {
   DataType,
   Default,
   ForeignKey,
+  HasMany,
   Model,
   Table,
   UpdatedAt,
@@ -18,6 +19,7 @@ import {
 import Client from "./Client";
 import Subscription from "./Subscription";
 import User from "./User";
+import Feedback from "./Feedback";
 
 export enum TIME {
   oneYear = "1 Year",
@@ -125,4 +127,6 @@ export default class Client_Sub extends Model<
   declare client?: InferAttributes<Client>;
   @BelongsTo(() => Subscription, "sub_id")
   declare subscription?: InferAttributes<Subscription>;
+  @HasMany(() => Feedback)
+  declare feedbacks?: InferAttributes<Feedback>[];
 }

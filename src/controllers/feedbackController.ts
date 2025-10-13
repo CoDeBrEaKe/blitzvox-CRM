@@ -43,3 +43,19 @@ export const deleteFeedback = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Something wrong happened" });
   }
 };
+
+export const getFeedbacks = async (req: Request, res: Response) => {
+  const { id, client } = req.params;
+  try {
+    const feedbacks = await Feedback.findAll({
+      where: client === "client" ? { client_id: id } : { client_sub_id: id },
+      order: [["created_at", "DESC"]],
+    });
+    if (!feedbacks) {
+      return res.status(404).json({ message: "Feedback not found" });
+    }
+    return res.status(200).json({ feedbacks });
+  } catch (error) {
+    return res.status(500).json({ message: "Something wrong happened" });
+  }
+};

@@ -9,6 +9,7 @@ import { formatDate } from "../utils/date";
 import path from "path";
 // Store file in memory for S3 upload
 import { uploadDocument, listDocuments } from "../utils/s3";
+import Feedback from "../models/Feedback";
 interface UserQueryParams {
   "client.name"?: string;
   your_order_num?: string;
@@ -29,10 +30,10 @@ export const getClientSubscribtions = async (
   res: Response
 ) => {
   const keys = Object.keys(req.query);
-  const { page = "1", limit = "10" } = req.query;
+  const { page = "1", limit } = req.query;
   const pageNum = parseInt(page);
-  const limitNum = parseInt(limit);
-
+  console.log(limit);
+  const limitNum = limit == "undefined" ? undefined : parseInt(limit!);
   let where: WhereOptions<InferAttributes<Client_Sub>> = {};
   let clientSubs;
   let clientSubsCount;
@@ -99,6 +100,7 @@ export const getClientSubscribtions = async (
     clientSubs = await Client_Sub.findAll({
       include: [
         { model: User, where: role == "admin" ? undefined : { id: id } },
+        { model: Feedback },
         {
           model: Client,
           where: where,
@@ -116,7 +118,7 @@ export const getClientSubscribtions = async (
       raw: true,
       nest: false,
       limit: limitNum,
-      offset: (pageNum - 1) * limitNum,
+      offset: (pageNum - 1) * (limitNum || 0),
     });
   } else if (keys[2] == "subscription.type.sub_image") {
     clientSubsCount = await Client_Sub.count({
@@ -136,6 +138,8 @@ export const getClientSubscribtions = async (
     clientSubs = await Client_Sub.findAll({
       include: [
         { model: User },
+        { model: Feedback },
+
         {
           model: Client,
           include: [
@@ -155,7 +159,7 @@ export const getClientSubscribtions = async (
       raw: true,
       nest: false,
       limit: limitNum,
-      offset: (pageNum - 1) * limitNum,
+      offset: (pageNum - 1) * (limitNum || 0),
     });
   } else if (keys[2] == "subscription.sub_name") {
     clientSubsCount = await Client_Sub.count({
@@ -176,6 +180,8 @@ export const getClientSubscribtions = async (
     clientSubs = await Client_Sub.findAll({
       include: [
         { model: User },
+        { model: Feedback },
+
         {
           model: Client,
           include: [
@@ -195,7 +201,7 @@ export const getClientSubscribtions = async (
       raw: true,
       nest: false,
       limit: limitNum,
-      offset: (pageNum - 1) * limitNum,
+      offset: (pageNum - 1) * (limitNum || 0),
     });
   } else {
     clientSubsCount = await Client_Sub.count({
@@ -203,6 +209,8 @@ export const getClientSubscribtions = async (
 
       include: [
         { model: User },
+        { model: Feedback },
+
         {
           model: Client,
           include: [
@@ -243,7 +251,7 @@ export const getClientSubscribtions = async (
       raw: true,
       nest: false,
       limit: limitNum,
-      offset: (pageNum - 1) * limitNum,
+      offset: (pageNum - 1) * (limitNum || 0),
     });
   }
 
@@ -261,10 +269,10 @@ export const getClientSubscribtions = async (
 
     pagination: {
       currentPage: pageNum,
-      totalPages: Math.ceil(clientSubsCount / limitNum),
+      totalPages: Math.ceil(clientSubsCount / (limitNum || 0)),
       totalItems: clientSubsCount,
       itemsPerPage: limitNum,
-      hasNext: pageNum * limitNum < clientSubsCount,
+      hasNext: pageNum * (limitNum || 0) < clientSubsCount,
       hasPrev: pageNum > 1,
     },
   });
@@ -277,7 +285,9 @@ export const getSingleClientSubscribtion = async (
   const { id } = req.params;
   const clientSub = await Client_Sub.findByPk(id, {
     include: [
-      { model: User },
+      { model: User, nested: true },
+      { model: Feedback },
+
       { model: Client },
       { model: Subscription, include: [{ model: Subscription_Type }] },
     ],

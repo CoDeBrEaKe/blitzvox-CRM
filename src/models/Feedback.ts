@@ -16,6 +16,7 @@ import {
   InferCreationAttributes,
 } from "sequelize";
 import Client from "./Client";
+import Client_Sub from "./Client_Sub";
 
 @Table({
   tableName: "feedbacks",
@@ -38,10 +39,17 @@ export default class Feedback extends Model<
 
   @ForeignKey(() => Client)
   @Column
-  declare client_id: number;
+  declare client_id?: number;
+
+  @ForeignKey(() => Client_Sub)
+  @Column
+  declare client_sub_id?: number;
 
   @BelongsTo(() => Client)
   declare client?: InferAttributes<Client>;
+
+  @BelongsTo(() => Client_Sub)
+  declare client_sub?: InferAttributes<Client_Sub>;
 
   @CreatedAt
   declare created_at?: CreationOptional<Date>;
