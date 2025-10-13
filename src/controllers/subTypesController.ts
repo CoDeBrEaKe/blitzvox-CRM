@@ -11,10 +11,9 @@ interface UserQueryParams {
 }
 
 export const createSubTypes = async (req: Request, res: Response) => {
-  const data = req.body;
+  const data = JSON.parse(req.body.data);
   const file = req.file;
   if (!file) {
-    console.log("ssss");
     const type = await Subscription_Type.create(data);
     return res
       .status(200)
@@ -109,7 +108,7 @@ export const getSubTypeById = async (req: Request, res: Response) => {
 };
 
 export const updateSubTypes = async (req: Request, res: Response) => {
-  const data = req.body;
+  const data = JSON.parse(req.body.data);
   const { id } = req.params;
   const file = req.file;
   let imageUrl;

@@ -16,9 +16,10 @@ class EmailService extends MessageService {
     to: string[]
   ): Promise<void> {
     to.forEach(async (receiver) => {
+      console.log(receiver);
       const mailOptions = {
         from: process.env.EMAIL_USER,
-        receiver,
+        to: receiver,
         subject,
         html,
         text: html.replace(/<[^>]+>/g, ""),
