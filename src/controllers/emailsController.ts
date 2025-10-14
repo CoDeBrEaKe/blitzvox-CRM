@@ -128,6 +128,7 @@ export const deleteEmail = async (req: Request, res: Response) => {
 
 export const sendEmail = async (req: Request, res: Response) => {
   const { subject, content, to } = req.body;
+  console.log(to);
   try {
     await MessageFactory.getMessageService("EMAIL").sendMessage(
       subject,

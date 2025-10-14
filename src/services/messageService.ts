@@ -16,6 +16,12 @@ class EmailService extends MessageService {
     to: string[]
   ): Promise<void> {
     for (const receiver of to) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailRegex.test(receiver)) {
+        console.error("❌ Invalid email address:", receiver);
+        continue; // stop before sending
+      }
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: receiver,

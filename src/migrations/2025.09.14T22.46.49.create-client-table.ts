@@ -2,23 +2,19 @@ import { Sequelize, DataTypes } from "sequelize";
 import type { Migration } from "../umzug";
 
 export const up: Migration = async ({ context: sequelize }) => {
-  await sequelize.getQueryInterface().createTable("client_sub", {
+  const queryInterface = sequelize.getQueryInterface();
+
+  await queryInterface.createTable("client_sub", {
     id: {
+      type: DataTypes.BIGINT,
       primaryKey: true,
       autoIncrement: true,
-      type: DataTypes.BIGINT,
       allowNull: false,
       unique: true,
     },
     user_id: {
       type: DataTypes.BIGINT,
       allowNull: true,
-      references: {
-        model: "users",
-        key: "id",
-      },
-      onUpdate: "CASCADE",
-      onDelete: "SET NULL",
     },
     order_num: {
       type: DataTypes.TEXT,
@@ -100,7 +96,6 @@ export const up: Migration = async ({ context: sequelize }) => {
       allowNull: true,
       defaultValue: 0,
     },
-
     persons_name: {
       type: DataTypes.TEXT,
       allowNull: true,
@@ -112,22 +107,10 @@ export const up: Migration = async ({ context: sequelize }) => {
     client_id: {
       type: DataTypes.BIGINT,
       allowNull: true,
-      references: {
-        model: "clients",
-        key: "id",
-      },
-      onUpdate: "CASCADE",
-      onDelete: "CASCADE",
     },
     sub_id: {
       type: DataTypes.BIGINT,
       allowNull: true,
-      references: {
-        model: "subscriptions",
-        key: "id",
-      },
-      onUpdate: "CASCADE",
-      onDelete: "CASCADE",
     },
     created_at: {
       type: DataTypes.DATE,
@@ -141,7 +124,45 @@ export const up: Migration = async ({ context: sequelize }) => {
     },
   });
 
-  await sequelize.getQueryInterface().addConstraint("client_sub", {
+  // ✅ Foreign key constraints added explicitly
+  await queryInterface.addConstraint("client_sub", {
+    fields: ["user_id"],
+    type: "foreign key",
+    name: "fk_client_sub_user",
+    references: {
+      table: "users",
+      field: "id",
+    },
+    onUpdate: "CASCADE",
+    onDelete: "SET NULL",
+  });
+
+  await queryInterface.addConstraint("client_sub", {
+    fields: ["client_id"],
+    type: "foreign key",
+    name: "fk_client_sub_client",
+    references: {
+      table: "clients",
+      field: "id",
+    },
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
+  });
+
+  await queryInterface.addConstraint("client_sub", {
+    fields: ["sub_id"],
+    type: "foreign key",
+    name: "fk_client_sub_subscription",
+    references: {
+      table: "subscriptions",
+      field: "id",
+    },
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
+  });
+
+  // Unique constraint
+  await queryInterface.addConstraint("client_sub", {
     fields: ["client_id", "sub_id"],
     type: "unique",
     name: "unique_client_sub",
@@ -149,8 +170,17 @@ export const up: Migration = async ({ context: sequelize }) => {
 };
 
 export const down: Migration = async ({ context: sequelize }) => {
-  await sequelize
-    .getQueryInterface()
-    .removeConstraint("client_sub", "unique_client_sub");
-  await sequelize.getQueryInterface().dropTable("client_sub");
+  const queryInterface = sequelize.getQueryInterface();
+
+  // Remove constraints (in reverse order)
+  await queryInterface.removeConstraint("client_sub", "unique_client_sub");
+  await queryInterface.removeConstraint(
+    "client_sub",
+    "fk_client_sub_subscription"
+  );
+  await queryInterface.removeConstraint("client_sub", "fk_client_sub_client");
+  await queryInterface.removeConstraint("client_sub", "fk_client_sub_user");
+
+  // Drop table
+  await queryInterface.dropTable("client_sub");
 };

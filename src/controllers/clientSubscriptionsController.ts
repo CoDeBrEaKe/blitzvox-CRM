@@ -32,7 +32,6 @@ export const getClientSubscribtions = async (
   const keys = Object.keys(req.query);
   const { page = "1", limit } = req.query;
   const pageNum = parseInt(page);
-  console.log(limit);
   const limitNum = limit == "undefined" ? undefined : parseInt(limit!);
   let where: WhereOptions<InferAttributes<Client_Sub>> = {};
   let clientSubs;
@@ -265,6 +264,8 @@ export const getClientSubscribtions = async (
     clientSubs: clientSubs.map((sub) => ({
       ...sub,
       sign_date: formatDate(sub?.sign_date),
+      start_importing: formatDate(sub?.start_importing),
+      end_importing: formatDate(sub?.end_importing),
     })),
 
     pagination: {

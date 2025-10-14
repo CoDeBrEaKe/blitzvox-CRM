@@ -95,6 +95,8 @@ async function seed() {
             rl_date: faker.date.past(),
             termination_date: faker.date.future(),
             sign_date: faker.date.past(),
+            start_importing: faker.date.past(),
+            end_importing: faker.date.past(),
             contract_time: faker.helpers.arrayElement([
               TIME.oneYear,
               TIME.twoYear,
