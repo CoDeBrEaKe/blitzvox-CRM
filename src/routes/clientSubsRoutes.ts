@@ -4,7 +4,7 @@ import * as clientSubController from "../controllers/clientSubscriptionsControll
 import multer from "multer";
 const upload = multer({ storage: multer.memoryStorage() });
 export const createClientSubRoutes = async (app: Express) => {
-  app.get(
+  app.post(
     "/client-subscription",
     authMiddleware,
     clientSubController.getClientSubscribtions
@@ -15,7 +15,7 @@ export const createClientSubRoutes = async (app: Express) => {
     clientSubController.getSingleClientSubscribtion
   );
   app.post(
-    "/client-subscription",
+    "/client-subscription/create",
     authMiddleware,
     clientSubController.createClientSub
   );

@@ -4,12 +4,13 @@ import Client from "../models/Client";
 import Subscription from "../models/Subscription";
 import Subscription_Type from "../models/Subscription_Type";
 import User from "../models/User";
-import { InferAttributes, Op, WhereOptions } from "sequelize";
 import { formatDate } from "../utils/date";
 import path from "path";
 // Store file in memory for S3 upload
 import { uploadDocument, listDocuments } from "../utils/s3";
 import Feedback from "../models/Feedback";
+import QueryBuilder from "../services/queryBuilder";
+
 interface UserQueryParams {
   "client.name"?: string;
   your_order_num?: string;
@@ -19,6 +20,7 @@ interface UserQueryParams {
   "subscription.type.sub_image"?: string;
   page?: string;
   limit?: string;
+  date?: { [key: string]: string[] };
 }
 const baseUrl =
   process.env.NODE_ENV == "production"
@@ -29,254 +31,74 @@ export const getClientSubscribtions = async (
   req: Request<{}, {}, {}, UserQueryParams>,
   res: Response
 ) => {
-  const keys = Object.keys(req.query);
   const { page = "1", limit } = req.query;
   const pageNum = parseInt(page);
   const limitNum = limit == "undefined" ? undefined : parseInt(limit!);
-  let where: WhereOptions<InferAttributes<Client_Sub>> = {};
-  let clientSubs;
-  let clientSubsCount;
-  if (keys.length > 2) {
-    let col = keys[2];
-
-    if (col == "subscription.type.sub_image") {
-      (where as any)[Op.or] = [
-        {
-          sub_type: {
-            [Op.iLike]: `%${(req as any).query[col]}%`,
-          },
-        },
-      ];
-    } else if (col == "subscription.sub_name") {
-      (where as any)[Op.or] = [
-        {
-          sub_name: {
-            [Op.iLike]: `%${(req as any).query[col]}%`,
-          },
-        },
-      ];
-    } else if (col == "client.first_name") {
-      (where as any)[Op.or] = [
-        {
-          first_name: {
-            [Op.iLike]: `%${(req as any).query[col]}%`,
-          },
-        },
-        {
-          family_name: {
-            [Op.iLike]: `%${(req as any).query[col]}%`,
-          },
-        },
-      ];
-    } else if (col == "sign_date") {
-      (where as any) = {
-        sign_date: {
-          [Op.between]: [
-            new Date((req as any).query[col]), // start date from query
-            new Date(), // current time
-          ],
-        },
-      };
-    } else {
-      (where as any) = [
-        {
-          [col]: {
-            [Op.iLike]: `%${(req as any).query[col]}%`,
-          },
-        },
-      ];
-    }
-  }
   const { id, role } = (req as any).user.dataValues;
 
-  if (keys[2] == "client.first_name") {
-    clientSubsCount = await Client_Sub.count({
-      include: [
-        { model: Client, where },
-        { model: User, where: role == "admin" ? undefined : { id: id } },
-      ],
-    });
-    clientSubs = await Client_Sub.findAll({
-      include: [
-        { model: User, where: role == "admin" ? undefined : { id: id } },
-        { model: Feedback },
-        {
-          model: Client,
-          where: where,
-        },
-        {
-          model: Subscription,
+  // Get the search column and value (you'll need to adjust this logic)
+  const date = req.body;
+  const col = (date as any).date ? Object.keys((date as any).date)[0] : null;
+  const searchCol = Object.keys(req.query)[2]; // You might want a better way to get search params
+  const searchValue = req.query[searchCol as keyof UserQueryParams];
+  try {
+    const queryBuilder = new QueryBuilder()
+      .withAuthorization(id, role)
+      .paginate(pageNum, limitNum)
+      .options(true, false);
+    if (searchCol && searchValue) {
+      queryBuilder.addWhere(searchCol, searchValue);
+    }
+    if (col && date)
+      queryBuilder.addWhere(col, (date as any).date[col as keyof typeof date]);
 
-          include: [
-            {
-              model: Subscription_Type,
-            },
-          ],
-        },
-      ],
-      raw: true,
-      nest: false,
-      limit: limitNum,
-      offset: (pageNum - 1) * (limitNum || 0),
-    });
-  } else if (keys[2] == "subscription.type.sub_image") {
-    clientSubsCount = await Client_Sub.count({
-      include: [
-        { model: User, where: role == "admin" ? undefined : { id: id } },
-        {
-          model: Subscription,
-          include: [
-            {
-              model: Subscription_Type,
-              where,
-            },
-          ],
-        },
-      ],
-    });
-    clientSubs = await Client_Sub.findAll({
-      include: [
-        { model: User },
-        { model: Feedback },
+    queryBuilder
+      .include("User")
+      .include("Feedback")
+      .include("Client")
+      .include("Subscription", undefined, [{ model: Subscription_Type }]);
 
-        {
-          model: Client,
-          include: [
-            { model: User, where: role == "admin" ? undefined : { id: id } },
-          ],
-        },
-        {
-          model: Subscription,
-          include: [
-            {
-              model: Subscription_Type,
-              where,
-            },
-          ],
-        },
-      ],
-      raw: true,
-      nest: false,
-      limit: limitNum,
-      offset: (pageNum - 1) * (limitNum || 0),
+    const query = queryBuilder.build();
+    // Execute both count and find in parallel
+    const [clientSubsCountRaw, clientSubs] = await Promise.all([
+      Client_Sub.count(query),
+      Client_Sub.findAll(query),
+    ]);
+
+    // If count is grouped, extract the total count
+    let clientSubsCount: number;
+    if (Array.isArray(clientSubsCountRaw)) {
+      clientSubsCount = clientSubsCountRaw.reduce(
+        (sum, item: any) => sum + (item.count ? Number(item.count) : 0),
+        0
+      );
+    } else {
+      clientSubsCount = Number(clientSubsCountRaw);
+    }
+
+    res.status(200).json({
+      message: "Subscriptions Fetched successfully",
+      clientSubs: clientSubs.map((sub) => ({
+        ...sub,
+        sign_date: formatDate(sub?.sign_date),
+        start_importing: formatDate(sub?.start_importing),
+        end_importing: formatDate(sub?.end_importing),
+      })),
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(
+          Number(clientSubsCount) / (limitNum || Number(clientSubsCount))
+        ),
+        totalItems: clientSubsCount,
+        itemsPerPage: limitNum,
+        hasNext: pageNum * (limitNum || clientSubsCount) < clientSubsCount,
+        hasPrev: pageNum > 1,
+      },
     });
-  } else if (keys[2] == "subscription.sub_name") {
-    clientSubsCount = await Client_Sub.count({
-      include: [
-        { model: User, where: { id: role == "admin" ? "" : id } },
-        {
-          model: Subscription,
-          where,
-
-          include: [
-            {
-              model: Subscription_Type,
-            },
-          ],
-        },
-      ],
-    });
-    clientSubs = await Client_Sub.findAll({
-      include: [
-        { model: User },
-        { model: Feedback },
-
-        {
-          model: Client,
-          include: [
-            { model: User, where: role == "admin" ? undefined : { id: id } },
-          ],
-        },
-        {
-          where,
-          model: Subscription,
-          include: [
-            {
-              model: Subscription_Type,
-            },
-          ],
-        },
-      ],
-      raw: true,
-      nest: false,
-      limit: limitNum,
-      offset: (pageNum - 1) * (limitNum || 0),
-    });
-  } else {
-    clientSubsCount = await Client_Sub.count({
-      where,
-
-      include: [
-        { model: User },
-        { model: Feedback },
-
-        {
-          model: Client,
-          include: [
-            { model: User, where: role == "admin" ? undefined : { id: id } },
-          ],
-        },
-        {
-          model: Subscription,
-          include: [
-            {
-              model: Subscription_Type,
-            },
-          ],
-        },
-      ],
-    });
-    clientSubs = await Client_Sub.findAll({
-      where,
-
-      include: [
-        { model: User },
-        {
-          model: Client,
-          include: [
-            { model: User, where: role == "admin" ? undefined : { id: id } },
-          ],
-        },
-        {
-          model: Subscription,
-
-          include: [
-            {
-              model: Subscription_Type,
-            },
-          ],
-        },
-      ],
-      raw: true,
-      nest: false,
-      limit: limitNum,
-      offset: (pageNum - 1) * (limitNum || 0),
-    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Something went Wrong" });
   }
-
-  if (!clientSubs) {
-    return res
-      .status(404)
-      .json({ message: "No Subscribtions for this client yet" });
-  }
-  res.status(200).json({
-    message: "Subscriptions Fetched successfully",
-    clientSubs: clientSubs.map((sub) => ({
-      ...sub,
-      sign_date: formatDate(sub?.sign_date),
-      start_importing: formatDate(sub?.start_importing),
-      end_importing: formatDate(sub?.end_importing),
-    })),
-
-    pagination: {
-      currentPage: pageNum,
-      totalPages: Math.ceil(clientSubsCount / (limitNum || 0)),
-      totalItems: clientSubsCount,
-      itemsPerPage: limitNum,
-      hasNext: pageNum * (limitNum || 0) < clientSubsCount,
-      hasPrev: pageNum > 1,
-    },
-  });
 };
 
 export const getSingleClientSubscribtion = async (
@@ -290,7 +112,14 @@ export const getSingleClientSubscribtion = async (
       { model: Feedback },
 
       { model: Client },
-      { model: Subscription, include: [{ model: Subscription_Type }] },
+      {
+        model: Subscription,
+        include: [
+          {
+            model: Subscription_Type,
+          },
+        ],
+      },
     ],
     raw: true,
     nest: false,
