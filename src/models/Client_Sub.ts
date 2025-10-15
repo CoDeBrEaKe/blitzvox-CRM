@@ -86,11 +86,11 @@ export default class Client_Sub extends Model<
   @Default(0)
   @Column
   declare family_count?: number;
-  @Default(0)
-  @Column
-  declare persons_num?: number;
-  @Column
-  declare persons_name?: string;
+  @Column({
+    type: DataType.ARRAY(DataType.TEXT),
+    allowNull: false,
+  })
+  declare persons_name?: string[];
   @Default("")
   @Column
   declare documents_link?: string;

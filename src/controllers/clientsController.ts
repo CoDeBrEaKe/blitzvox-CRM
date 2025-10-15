@@ -5,7 +5,7 @@ import Subscription from "../models/Subscription";
 import Feedback from "../models/Feedback";
 import Subscription_Type from "../models/Subscription_Type";
 import Client_Sub from "../models/Client_Sub";
-import { InferAttributes, Op, WhereOptions } from "sequelize";
+import { InferAttributes, Op, WhereOptions, fn, col, where } from "sequelize";
 import formidable from "formidable";
 import fs from "fs/promises";
 import { parse } from "csv-parse/sync";
@@ -255,7 +255,7 @@ export const importFile = async (req: Request, res: Response) => {
       columns: true, // Automatically parse headers as column names
       skip_empty_lines: true,
       trim: true,
-      delimiter: ",",
+      delimiter: ";",
     });
 
     const results: any[] = [];
@@ -267,9 +267,16 @@ export const importFile = async (req: Request, res: Response) => {
         // Find or create client
         let client = await Client.findOne({
           where: {
-            first_name: row["Vorname"],
-            family_name: row["Nachname"],
-            email: row["E-Mail"],
+            [Op.and]: [
+              where(
+                fn("LOWER", col("first_name")),
+                fn("LOWER", row["Vorname"])
+              ),
+              where(
+                fn("LOWER", col("family_name")),
+                fn("LOWER", row["Nachname"])
+              ),
+            ],
           },
         });
 
@@ -297,11 +304,24 @@ export const importFile = async (req: Request, res: Response) => {
           where: { sub_name: row["Tarif/Produkt"] },
         });
         if (!sub) {
-          sub = await Subscription.create({
-            sub_name: row["Tarif/Produkt"],
-            sub_id: 2,
-            company: "test",
-          });
+          const types = await Subscription_Type.findAll();
+
+          for (const type of types) {
+            if (
+              row["Tarif/Produkt"]
+                .toLowerCase()
+                .includes(type.sub_type.toLowerCase())
+            ) {
+              console.log(row["Tarif/Produkt"].includes(type.sub_type));
+
+              sub = await Subscription.create({
+                sub_name: row["Tarif/Produkt"],
+                sub_id: type.id,
+                company: "test",
+              });
+            }
+          }
+          if (!sub) continue;
         }
 
         if (user && client) {
@@ -321,6 +341,7 @@ export const importFile = async (req: Request, res: Response) => {
             paid_date: dateConverter(row["VAP-Datum"]),
             rl: row["RL"] == "Nein" ? false : true,
             rl_date: dateConverter(row["RL-Datum"]),
+            persons_name: [],
             termination_date: dateConverter(row["Stornodatum"]),
             restablish_date: dateConverter(row["Wiederanschaltungsdatum"]),
             start_importing: dateConverter(row["Lieferbeginn"]),

@@ -1,11 +1,9 @@
 export default function dateConverter(date: string): Date | undefined {
-  if (date != "") {
+  if (date != "" && date != "-") {
     const [day, month, year] = date.split(".").map(Number);
     const jsDate = new Date(year, month - 1, day);
-    console.log(jsDate);
     return jsDate;
   }
-  console.log("ss");
   return undefined;
 }
 

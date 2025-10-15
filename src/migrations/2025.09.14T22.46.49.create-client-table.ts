@@ -97,8 +97,9 @@ export const up: Migration = async ({ context: sequelize }) => {
       defaultValue: 0,
     },
     persons_name: {
-      type: DataTypes.TEXT,
+      type: DataTypes.ARRAY(DataTypes.TEXT("medium")),
       allowNull: true,
+      defaultValue: [],
     },
     documents_link: {
       type: DataTypes.TEXT,
