@@ -3,7 +3,7 @@ import {
   PutObjectCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
-
+require("dotenv").config();
 const s3Client = new S3Client({
   region: process.env.AWS_REGION!, // e.g., 'us-east-1'
   credentials: {
