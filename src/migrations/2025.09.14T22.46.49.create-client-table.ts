@@ -173,14 +173,14 @@ export const up: Migration = async ({ context: sequelize }) => {
 export const down: Migration = async ({ context: sequelize }) => {
   const queryInterface = sequelize.getQueryInterface();
 
-  // // Remove constraints (in reverse order)
-  // await queryInterface.removeConstraint("client_sub", "unique_client_sub");
-  // await queryInterface.removeConstraint(
-  //   "client_sub",
-  //   "fk_client_sub_subscription"
-  // );
-  // await queryInterface.removeConstraint("client_sub", "fk_client_sub_client");
-  // await queryInterface.removeConstraint("client_sub", "fk_client_sub_user");
+  // Remove constraints (in reverse order)
+  await queryInterface.removeConstraint("client_sub", "unique_client_sub");
+  await queryInterface.removeConstraint(
+    "client_sub",
+    "fk_client_sub_subscription"
+  );
+  await queryInterface.removeConstraint("client_sub", "fk_client_sub_client");
+  await queryInterface.removeConstraint("client_sub", "fk_client_sub_user");
 
   // Drop table
   await queryInterface.dropTable("client_sub");
