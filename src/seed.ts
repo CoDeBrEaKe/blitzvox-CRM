@@ -36,93 +36,93 @@ async function seed() {
       )
     );
 
-    // --- Clients ---
-    const clients = await Promise.all(
-      Array.from({ length: 40 }).map(() =>
-        Client.create({
-          first_name: faker.person.firstName(),
-          company_name: faker.company.name(),
-          street: faker.location.streetAddress(),
-          city: faker.location.city(),
-          email: faker.person.fullName(),
-          phone: faker.phone.number(),
+    // // --- Clients ---
+    // const clients = await Promise.all(
+    //   Array.from({ length: 40 }).map(() =>
+    //     Client.create({
+    //       first_name: faker.person.firstName(),
+    //       company_name: faker.company.name(),
+    //       street: faker.location.streetAddress(),
+    //       city: faker.location.city(),
+    //       email: faker.person.fullName(),
+    //       phone: faker.phone.number(),
 
-          user_id: faker.helpers.arrayElement(users).id,
-          subscriptions: [],
-        })
-      )
-    );
+    //       user_id: faker.helpers.arrayElement(users).id,
+    //       subscriptions: [],
+    //     })
+    //   )
+    // );
 
-    // --- Subscriptions ---
-    const subscription_types = await Promise.all(
-      Array.from({ length: 5 }).map(() =>
-        Subscription_Type.create({
-          sub_type: faker.company.name(),
-          sub_image: faker.company.name(),
-        })
-      )
-    );
-    // --- Subscriptions ---
-    const subscriptions = await Promise.all(
-      Array.from({ length: 5 }).map(() =>
-        Subscription.create({
-          sub_id: faker.helpers.arrayElement(subscription_types).id,
-          sub_name: faker.company.name(),
-          company: faker.company.name(),
-          clients: [],
-        })
-      )
-    );
+    // // --- Subscriptions ---
+    // const subscription_types = await Promise.all(
+    //   Array.from({ length: 5 }).map(() =>
+    //     Subscription_Type.create({
+    //       sub_type: faker.company.name(),
+    //       sub_image: faker.company.name(),
+    //     })
+    //   )
+    // );
+    // // --- Subscriptions ---
+    // const subscriptions = await Promise.all(
+    //   Array.from({ length: 5 }).map(() =>
+    //     Subscription.create({
+    //       sub_id: faker.helpers.arrayElement(subscription_types).id,
+    //       sub_name: faker.company.name(),
+    //       company: faker.company.name(),
+    //       clients: [],
+    //     })
+    //   )
+    // );
 
-    // --- Client_Sub (link Clients & Subscriptions) ---
-    await Promise.all(
-      clients.map((client) =>
-        Array.from({ length: 2 }).map(() =>
-          Client_Sub.create({
-            client_id: client.id,
-            user_id: 1,
-            sub_id: faker.helpers.arrayElement(subscriptions).id,
-            order_num: faker.string.alphanumeric(8),
-            your_order_num: faker.string.alphanumeric(6),
-            cost: faker.number.int({ min: 100, max: 5000 }),
-            status: faker.string.alphanumeric(10),
-            counter_number: faker.string.alphanumeric(10),
-            consumption: faker.number.int({ min: 100, max: 10000 }),
-            night_consumption: faker.number.int({ min: 0, max: 3000 }),
-            paid: faker.datatype.boolean(),
-            paid_date: faker.date.past(),
-            rl: faker.datatype.boolean(),
-            rl_date: faker.date.past(),
-            termination_date: faker.date.future(),
-            sign_date: faker.date.past(),
-            start_importing: faker.date.past(),
-            end_importing: faker.date.past(),
-            contract_time: faker.helpers.arrayElement([
-              TIME.oneYear,
-              TIME.twoYear,
-            ]),
-          })
-        )
-      )
-    );
+    // // --- Client_Sub (link Clients & Subscriptions) ---
+    // await Promise.all(
+    //   clients.map((client) =>
+    //     Array.from({ length: 2 }).map(() =>
+    //       Client_Sub.create({
+    //         client_id: client.id,
+    //         user_id: 1,
+    //         sub_id: faker.helpers.arrayElement(subscriptions).id,
+    //         order_num: faker.string.alphanumeric(8),
+    //         your_order_num: faker.string.alphanumeric(6),
+    //         cost: faker.number.int({ min: 100, max: 5000 }),
+    //         status: faker.string.alphanumeric(10),
+    //         counter_number: faker.string.alphanumeric(10),
+    //         consumption: faker.number.int({ min: 100, max: 10000 }),
+    //         night_consumption: faker.number.int({ min: 0, max: 3000 }),
+    //         paid: faker.datatype.boolean(),
+    //         paid_date: faker.date.past(),
+    //         rl: faker.datatype.boolean(),
+    //         rl_date: faker.date.past(),
+    //         termination_date: faker.date.future(),
+    //         sign_date: faker.date.past(),
+    //         start_importing: faker.date.past(),
+    //         end_importing: faker.date.past(),
+    //         contract_time: faker.helpers.arrayElement([
+    //           TIME.oneYear,
+    //           TIME.twoYear,
+    //         ]),
+    //       })
+    //     )
+    //   )
+    // );
 
-    await Promise.all(
-      Array.from({ length: 50 }).map(() =>
-        Feedback.create({
-          feedback: faker.lorem.sentences(2),
-          client_id: faker.helpers.arrayElement(clients).id,
-        })
-      )
-    );
-    // --- Emails ---
-    await Promise.all(
-      Array.from({ length: 15 }).map(() =>
-        Email.create({
-          subject: faker.lorem.sentence(),
-          content: faker.lorem.paragraphs(2),
-        })
-      )
-    );
+    // await Promise.all(
+    //   Array.from({ length: 50 }).map(() =>
+    //     Feedback.create({
+    //       feedback: faker.lorem.sentences(2),
+    //       client_id: faker.helpers.arrayElement(clients).id,
+    //     })
+    //   )
+    // );
+    // // --- Emails ---
+    // await Promise.all(
+    //   Array.from({ length: 15 }).map(() =>
+    //     Email.create({
+    //       subject: faker.lorem.sentence(),
+    //       content: faker.lorem.paragraphs(2),
+    //     })
+    //   )
+    // );
 
     // --- Feedback ---
 
