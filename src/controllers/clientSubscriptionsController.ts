@@ -49,7 +49,7 @@ export const getClientSubscribtions = async (
     if (searchCol && searchValue) {
       queryBuilder.addWhere(searchCol, searchValue);
     }
-    if (col && date)
+    if (col && (date as any).date[col].length)
       queryBuilder.addWhere(col, (date as any).date[col as keyof typeof date]);
 
     queryBuilder
