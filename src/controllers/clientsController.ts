@@ -24,9 +24,16 @@ export const getClients = async (
   res: Response
 ) => {
   const keys = Object.keys(req.query);
-  const { page = "1", limit = "10" } = req.query;
-  const pageNum = parseInt(page);
-  const limitNum = parseInt(limit);
+  const { page = "1", limit } = req.query;
+  let pageNum, limitNum;
+  if (limit == "undefined") {
+    limitNum = undefined;
+    pageNum = 1;
+  } else {
+    pageNum = parseInt(page);
+
+    limitNum = parseInt(limit!);
+  }
 
   let where: WhereOptions<InferAttributes<Client>> = {};
   if (keys.length > 2) {
@@ -84,7 +91,7 @@ export const getClients = async (
         },
       ],
       limit: limitNum,
-      offset: (pageNum - 1) * limitNum,
+      offset: limitNum ? (pageNum - 1) * limitNum : 1,
     });
     totalCount = await Client.count({
       include: [
@@ -123,7 +130,7 @@ export const getClients = async (
         },
       ],
       limit: limitNum,
-      offset: (pageNum - 1) * limitNum,
+      offset: limitNum ? (pageNum - 1) * limitNum : 1,
     });
 
     totalCount = await Client.count({
@@ -140,10 +147,10 @@ export const getClients = async (
     clients,
     pagination: {
       currentPage: pageNum,
-      totalPages: Math.ceil(totalCount / limitNum),
+      totalPages: limitNum ? Math.ceil(totalCount / limitNum) : 1,
       totalItems: totalCount,
       itemsPerPage: limitNum,
-      hasNext: pageNum * limitNum < totalCount,
+      hasNext: limitNum ? pageNum * limitNum < totalCount : false,
       hasPrev: pageNum > 1,
     },
   });
