@@ -9,4 +9,5 @@ export const emailRoutes = async (app: Express) => {
   app.put("/emails/:id", authMiddleware, emailsController.updateEmail);
   app.delete("/emails/:id", authMiddleware, emailsController.deleteEmail);
   app.post("/send-email", authMiddleware, emailsController.sendEmail);
+  app.post("/send-message", authMiddleware, emailsController.sendMessage);
 };

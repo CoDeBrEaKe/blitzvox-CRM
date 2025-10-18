@@ -1,5 +1,12 @@
 type Channel = "EMAIL" | "WHATSAPP";
 import { transporter } from "../utils/emailSetup";
+import axios from "axios";
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN as string;
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID as string;
 
 abstract class MessageService {
   abstract sendMessage(
@@ -39,14 +46,44 @@ class EmailService extends MessageService {
     }
   }
 }
+class WhatsappService extends MessageService {
+  async sendMessage(subject: string, message: string, to: string[]) {
+    const url = `https://graph.facebook.com/v18.0/${PHONE_NUMBER_ID}/messages`;
+    for (const receiver of to) {
+      try {
+        const response = await axios.post(
+          url,
+          {
+            messaging_product: "whatsapp",
+            to: "201112269700", // Example: "201234567890"
+            type: "text",
+            text: { body: message },
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
+        console.log("Message sent:", response.data);
+      } catch (error: any) {
+        console.error(
+          "Error sending message:",
+          error.response?.data || error.message
+        );
+      }
+    }
+  }
+}
 export class MessageFactory {
   static getMessageService(channel: Channel): MessageService {
     switch (channel) {
       case "EMAIL":
         return new EmailService();
       case "WHATSAPP":
-        return new EmailService();
+        return new WhatsappService();
     }
   }
 }

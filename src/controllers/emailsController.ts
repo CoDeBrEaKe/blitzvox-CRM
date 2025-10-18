@@ -128,7 +128,6 @@ export const deleteEmail = async (req: Request, res: Response) => {
 
 export const sendEmail = async (req: Request, res: Response) => {
   const { subject, content, to } = req.body;
-  console.log(to);
   try {
     await MessageFactory.getMessageService("EMAIL").sendMessage(
       subject,
@@ -136,6 +135,20 @@ export const sendEmail = async (req: Request, res: Response) => {
       to
     );
     return res.status(200).json({ message: "Email sent successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error sending email", error });
+  }
+};
+
+export const sendMessage = async (req: Request, res: Response) => {
+  const { content, to } = req.body;
+  try {
+    await MessageFactory.getMessageService("WHATSAPP").sendMessage(
+      "",
+      content,
+      to
+    );
+    return res.status(200).json({ message: "Message sent successfully" });
   } catch (error) {
     return res.status(500).json({ message: "Error sending email", error });
   }
