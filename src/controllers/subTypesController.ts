@@ -108,7 +108,7 @@ export const getSubTypeById = async (req: Request, res: Response) => {
 };
 
 export const updateSubTypes = async (req: Request, res: Response) => {
-  const data = JSON.parse(req.body.data);
+  const data = req.body;
   const { id } = req.params;
   const file = req.file;
   let imageUrl;
@@ -130,10 +130,9 @@ export const updateSubTypes = async (req: Request, res: Response) => {
         .status(404)
         .json({ message: "No Subscription type Found successfully" });
     }
-    type = await type.update({
-      ...data,
-      sub_image: imageUrl || type.sub_image,
-    });
+    type.sub_type = data.sub_type;
+    type.sub_image = imageUrl || type.sub_image;
+    type?.save();
     res
       .status(200)
       .json({ message: "Subscription type Updated successfully", type });

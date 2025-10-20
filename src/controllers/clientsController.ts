@@ -158,6 +158,14 @@ export const getClients = async (
 
 export const createClient = async (req: Request, res: Response) => {
   const clientData = req.body;
+  const emailExistence = await Client.findOne({
+    where: { email: req.body.email },
+  });
+  if (emailExistence) {
+    return res
+      .status(400)
+      .json({ message: "There is an existing client with the same email" });
+  }
   const newClient = await Client.create({
     ...clientData,
     user_id: (req as any).user.dataValues.id,
