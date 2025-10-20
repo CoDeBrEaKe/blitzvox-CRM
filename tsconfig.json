@@ -10,6 +10,6 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", ".env"],
   "exclude": ["node_modules", "dist", "src/umzug.js", "src/migrations/**/*"]
 }
