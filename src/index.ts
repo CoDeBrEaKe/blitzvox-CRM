@@ -1,6 +1,7 @@
 import { createServer } from "./server";
 import repository from "./data/repository";
-
+import dotenv from "dotenv";
+dotenv.config();
 const server = createServer();
 
 const port = process.env.PORT || 3000;

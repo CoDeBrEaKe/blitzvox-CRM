@@ -1,13 +1,13 @@
 import { Express, Request, Response } from "express";
 import Client from "../models/Client";
-import Subscription from "../models/Subscription";
 import User from "../models/User";
 import { Sequelize } from "sequelize";
+import Client_Sub from "../models/Client_Sub";
 export const getReports = async (req: Request, res: Response) => {
   try {
     // Total counts
     const totalClients = await Client.count();
-    const totalSubscriptions = await Subscription.count();
+    const totalSubscriptions = await Client_Sub.count();
     const totalUsers = await User.count();
 
     // Top cities (group by city)
