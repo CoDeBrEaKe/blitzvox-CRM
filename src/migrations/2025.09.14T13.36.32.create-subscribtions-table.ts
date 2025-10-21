@@ -44,7 +44,21 @@ export const up: Migration = async ({ context: sequelize }) => {
       defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     },
   });
+  await sequelize.getQueryInterface().addConstraint("subscriptions", {
+    fields: ["sub_id"],
+    type: "foreign key",
+    name: "subscription_types_pkey",
+    references: {
+      table: "subscription_types",
+      field: "id",
+    },
+    onUpdate: "CASCADE",
+    onDelete: "CASCADE",
+  });
 };
 export const down: Migration = async ({ context: sequelize }) => {
+  await sequelize
+    .getQueryInterface()
+    .removeConstraint("subscriptions", "subscription_types_pkey");
   await sequelize.getQueryInterface().dropTable("subscriptions");
 };

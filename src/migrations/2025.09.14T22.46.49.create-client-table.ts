@@ -129,7 +129,7 @@ export const up: Migration = async ({ context: sequelize }) => {
   await queryInterface.addConstraint("client_sub", {
     fields: ["user_id"],
     type: "foreign key",
-    name: "fk_client_sub_user",
+    name: "client_sub_user_id_fkey",
     references: {
       table: "users",
       field: "id",
@@ -141,7 +141,7 @@ export const up: Migration = async ({ context: sequelize }) => {
   await queryInterface.addConstraint("client_sub", {
     fields: ["client_id"],
     type: "foreign key",
-    name: "fk_client_sub_client",
+    name: "client_sub_client_id_fkey",
     references: {
       table: "clients",
       field: "id",
@@ -153,7 +153,7 @@ export const up: Migration = async ({ context: sequelize }) => {
   await queryInterface.addConstraint("client_sub", {
     fields: ["sub_id"],
     type: "foreign key",
-    name: "fk_client_sub_subscription",
+    name: "client_sub_sub_id_fkey",
     references: {
       table: "subscriptions",
       field: "id",
@@ -175,12 +175,15 @@ export const down: Migration = async ({ context: sequelize }) => {
 
   // Remove constraints (in reverse order)
   await queryInterface.removeConstraint("client_sub", "unique_client_sub");
+  await queryInterface.removeConstraint("client_sub", "client_sub_sub_id_fkey");
   await queryInterface.removeConstraint(
     "client_sub",
-    "fk_client_sub_subscription"
+    "client_sub_client_id_fkey"
   );
-  await queryInterface.removeConstraint("client_sub", "fk_client_sub_client");
-  await queryInterface.removeConstraint("client_sub", "fk_client_sub_user");
+  await queryInterface.removeConstraint(
+    "client_sub",
+    "client_sub_user_id_fkey"
+  );
 
   // Drop table
   await queryInterface.dropTable("client_sub");
